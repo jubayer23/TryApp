@@ -83,6 +83,8 @@ public class MapActivity extends Map2 implements LocationListener,
 
     }
 
+    //sone changes
+
     private void placeMarkerOnMap() {
         // check for null in case it is null
 
