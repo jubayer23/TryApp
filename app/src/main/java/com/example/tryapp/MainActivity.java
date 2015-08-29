@@ -28,6 +28,8 @@ import com.example.utils.Constant;
 
 public class MainActivity extends Activity implements OnClickListener {
 
+	//change in 2nd
+
 	EditText et_username, et_password;
 
 	Button btn_submit, btn_logout, map_show;
