@@ -4,6 +4,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +23,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.appdata.AppController;
+import com.example.appdata.SaveManager;
 import com.example.dialog.AlertDialogManager;
 import com.example.service.MyService;
 import com.example.setting.GPSTracker;
@@ -28,200 +31,207 @@ import com.example.utils.Constant;
 
 public class MainActivity extends Activity implements OnClickListener {
 
-	//change in 2nd
+    //change in 2nd
 
-	EditText et_username, et_password;
+    EditText et_username, et_password;
 
-	Button btn_submit, btn_logout, map_show;
+    Button btn_submit, btn_logout, map_show;
 
-	String username, password;
+    String username, password;
 
-	private static String URL;
+    private static String URL;
 
-	private static String KEY_STATUS = "status";
-	private static String KEY_USER_ID = "id";
+    private static String KEY_STATUS = "status";
+    private static String KEY_USER_ID = "id";
 
-	// Progress Dialog
-	private ProgressDialog pDialog;
+    // Progress Dialog
+    private ProgressDialog pDialog;
 
-	SharedPreferences prefs;
 
-	// Alert Dialog Manager
-	AlertDialogManager alert = new AlertDialogManager();
+    // Alert Dialog Manager
+    AlertDialogManager alert = new AlertDialogManager();
 
-	// GPS Location
-	GPSTracker gps;
+    // GPS Location
+    GPSTracker gps;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+    private SaveManager saveManager;
 
-		init();
-		
-		
-		prefs = getSharedPreferences(getPackageName(), Context.MODE_PRIVATE);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-		visibleInvisible();
-		// creating GPS Class object
-		gps = new GPSTracker(this);
-		
-	}
+        init();
 
-	private void init() {
-		// TODO Auto-generated method stub
-		et_username = (EditText) findViewById(R.id.username);
-		et_password = (EditText) findViewById(R.id.password);
 
-		btn_submit = (Button) findViewById(R.id.submit);
-		btn_submit.setOnClickListener(this);
+        saveManager = new SaveManager(this);
+        //visibleInvisible();
+        // creating GPS Class object
+        gps = new GPSTracker(this);
 
-		btn_logout = (Button) findViewById(R.id.logout);
-		btn_logout.setOnClickListener(this);
+    }
 
-		map_show = (Button) findViewById(R.id.mapshow);
-		map_show.setOnClickListener(this);
-	}
+    private void init() {
+        // TODO Auto-generated method stub
+        et_username = (EditText) findViewById(R.id.username);
+        et_password = (EditText) findViewById(R.id.password);
 
-	@Override
-	public void onClick(View v) {
-		// TODO Auto-generated method stub
-		int id = v.getId();
+        btn_submit = (Button) findViewById(R.id.submit);
+        btn_submit.setOnClickListener(this);
 
-		if (id == R.id.submit) {
-			username = et_username.getText().toString();
-			password = et_password.getText().toString();
+        btn_logout = (Button) findViewById(R.id.logout);
+        btn_logout.setOnClickListener(this);
 
-			if (username.length() > 0 && password.length() > 0) {
-				setupApiUrl();
+        map_show = (Button) findViewById(R.id.mapshow);
+        map_show.setOnClickListener(this);
+    }
 
-				
+    @Override
+    public void onClick(View v) {
+        // TODO Auto-generated method stub
+        int id = v.getId();
 
-				if (gps.canGetLocation()) {
-					pDialog = new ProgressDialog(MainActivity.this);
-					pDialog.setMessage("Loading products. Please wait...");
-					pDialog.setIndeterminate(false);
-					pDialog.setCancelable(false);
-					pDialog.show();
-					
-					hitUrl();
-				} else {
-					alert.showAlertDialog(MainActivity.this, "GPS",
-							"PLEASE ENALE GPS FIRST", false);
-				}
+        if (id == R.id.submit) {
+            username = et_username.getText().toString();
+            password = et_password.getText().toString();
 
-				// Adding request to request queue
+            if (username.length() > 0 && password.length() > 0) {
+                setupApiUrl();
 
-			}
 
-		}
-		if (id == R.id.logout) {
-			deleteData();
+                if (gps.canGetLocation()) {
+                    pDialog = new ProgressDialog(MainActivity.this);
+                    pDialog.setMessage("Loading products. Please wait...");
+                    pDialog.setIndeterminate(false);
+                    pDialog.setCancelable(false);
+                    pDialog.show();
 
-			visibleInvisible();
-		}
+                    hitUrl();
+                } else {
+                    alert.showAlertDialog(MainActivity.this, "GPS",
+                            "PLEASE ENALE GPS FIRST", false);
+                }
 
-		if (id == R.id.mapshow) {
-			Intent intent = new Intent(MainActivity.this, MapActivity.class);
-			startActivity(intent);
-		}
-	}
+                // Adding request to request queue
 
-	private void hitUrl() {
+            }
 
-		final JsonObjectRequest jsObjRequest = new JsonObjectRequest(
-				Request.Method.GET, URL, null,
-				new Response.Listener<JSONObject>() {
+        }
+        if (id == R.id.logout) {
+            deleteData();
 
-					@Override
-					public void onResponse(JSONObject response) {
+            disableService();
 
-						pDialog.dismiss();
-						String textResult = response.toString();
+            visibleInvisible();
+        }
 
-						// Log.d("DEBUG_SUCESS", textResult);
-						try {
-							boolean status = response.getBoolean(KEY_STATUS);
-							int id;
-							if (status) {
-								id = response.getInt(KEY_USER_ID);
-								saveData(id);
+        if (id == R.id.mapshow) {
+            Intent intent = new Intent(MainActivity.this, MapActivity.class);
+            startActivity(intent);
+        }
+    }
 
-								Intent intent = new Intent(MainActivity.this, MapActivity.class);
-								startActivity(intent);
+    private void hitUrl() {
 
-								Intent intent2 = new Intent(MainActivity.this,
-										MyService.class);
-								startService(intent2);
+        final JsonObjectRequest jsObjRequest = new JsonObjectRequest(
+                Request.Method.GET, URL, null,
+                new Response.Listener<JSONObject>() {
 
-								visibleInvisible();
-							}
-							else
-							{
-								alert.showAlertDialog(MainActivity.this, "Error", "Invalid credentials!", false);
-							}
+                    @Override
+                    public void onResponse(JSONObject response) {
 
-						} catch (JSONException e) {
-							e.printStackTrace();
-						}
-					}
+                        pDialog.dismiss();
+                        String textResult = response.toString();
 
-				}, new Response.ErrorListener() {
+                        // Log.d("DEBUG_SUCESS", textResult);
+                        try {
+                            boolean status = response.getBoolean(KEY_STATUS);
+                            int id;
+                            if (status) {
+                                id = response.getInt(KEY_USER_ID);
 
-					@Override
-					public void onErrorResponse(VolleyError error) {
-						pDialog.dismiss();
-						if (error != null)
-							Log.e("MainActivity", error.getMessage());
+                                saveManager.setUserId(String.valueOf(id));
 
-					}
-				});
-		// TODO Auto-generated method stub
-		AppController.getInstance().addToRequestQueue(jsObjRequest);
-	}
 
-	public void setupApiUrl() {
-		URL = Constant.URL_LOGIN + "username=" + username + "&password="
-				+ password;
+                                gps.stopUsingGPS();
 
-		// Log.d("URL", URL);
+                                Intent intent = new Intent(MainActivity.this, MapActivity.class);
+                                startActivity(intent);
 
-	}
+                                Intent intent2 = new Intent(MainActivity.this,
+                                        MyService.class);
+                                startService(intent2);
 
-	private void saveData(int user_id) {
-		Editor editor = prefs.edit();
+                                visibleInvisible();
+                            } else {
+                                alert.showAlertDialog(MainActivity.this, "Error", "Invalid credentials!", false);
+                            }
 
-		editor.putString("user_id", String.valueOf(user_id));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
 
-		editor.commit();
-	}
+                }, new Response.ErrorListener() {
 
-	private void deleteData() {
-		Editor editor = prefs.edit();
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                pDialog.dismiss();
+                if (error != null)
+                    Log.e("MainActivity", error.getMessage());
 
-		editor.putString("user_id", "0");
+            }
+        });
+        // TODO Auto-generated method stub
+        AppController.getInstance().addToRequestQueue(jsObjRequest);
+    }
 
-		editor.commit();
-	}
+    public void setupApiUrl() {
+        URL = Constant.URL_LOGIN + "username=" + username + "&password="
+                + password;
 
-	private void visibleInvisible() {
-		// TODO Auto-generated method stub
-		
-		
-		
-		if(prefs.getString("user_id", "0").equals("0"))
-		{
-			et_password.setVisibility(View.VISIBLE);
-			et_username.setVisibility(View.VISIBLE);
-			btn_submit.setVisibility(View.VISIBLE);
-			btn_logout.setVisibility(View.GONE);
-			map_show.setVisibility(View.GONE);
-		}else{
-			et_password.setVisibility(View.GONE);
-			et_username.setVisibility(View.GONE);
-			btn_submit.setVisibility(View.GONE);
-			btn_logout.setVisibility(View.VISIBLE);
-			map_show.setVisibility(View.VISIBLE);
-		}
-	}
+        // Log.d("URL", URL);
+
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        visibleInvisible();
+        ;
+    }
+
+    private void visibleInvisible() {
+        // TODO Auto-generated method stub
+
+
+        if (saveManager.getUserId().equals("0")) {
+            et_password.setVisibility(View.VISIBLE);
+            et_username.setVisibility(View.VISIBLE);
+            btn_submit.setVisibility(View.VISIBLE);
+            btn_logout.setVisibility(View.GONE);
+            map_show.setVisibility(View.GONE);
+        } else {
+            et_password.setVisibility(View.GONE);
+            et_username.setVisibility(View.GONE);
+            btn_submit.setVisibility(View.GONE);
+            btn_logout.setVisibility(View.VISIBLE);
+            map_show.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void disableService() {
+        Intent intent = new Intent(getApplicationContext(), MyService.class);
+        PendingIntent pintent = PendingIntent.getService(
+                getApplicationContext(), 0, intent, 0);
+        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarm.cancel(pintent);
+    }
+
+    private void deleteData() {
+
+        saveManager.setUserId("0");
+
+    }
 }

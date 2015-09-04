@@ -4,10 +4,47 @@
     android:layout_height="match_parent"
     tools:context="com.example.kodeverketmap.Map2">
 
+    <LinearLayout
+        android:id="@+id/bar"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="#999A90"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ToggleButton
+            android:id="@+id/toggleButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:checked="true"
+            android:textOff="TRACKING OFF"
+            android:textOn="TRACKING ON" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="38dp"
+            android:layout_weight="4"
+            android:gravity="center"
+            android:src="@drawable/logo_2_transparent"
+            android:textColor="@android:color/holo_blue_light" />
+
+        <Button
+
+            android:id="@+id/signOut"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:text="Sign Out" />
+
+    </LinearLayout>
+
     <fragment
         android:id="@+id/map_2"
         class="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bar" />
 
 </RelativeLayout>

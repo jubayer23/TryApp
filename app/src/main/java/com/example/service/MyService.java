@@ -19,6 +19,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.appdata.AppController;
+import com.example.appdata.SaveManager;
 import com.example.setting.ConnectionDetector;
 import com.example.setting.GPSTracker;
 import com.example.utils.Constant;
@@ -26,13 +27,15 @@ import com.example.utils.Constant;
 public class MyService extends Service {
 	Calendar cur_cal = Calendar.getInstance();
 
-	SharedPreferences prefs;
+
 
 	// GPS Location
 	GPSTracker gps;
 
 	// Connection detector class
 	ConnectionDetector cd;
+
+	private SaveManager saveManager;
 
 	@Override
 	public void onCreate() {
@@ -44,14 +47,17 @@ public class MyService extends Service {
 		AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		cur_cal.setTimeInMillis(System.currentTimeMillis());
 		alarm.setRepeating(AlarmManager.RTC_WAKEUP, cur_cal.getTimeInMillis(),
-				60 * 100, pintent);
+				50 * 100, pintent);
 
-		prefs = getSharedPreferences(getPackageName(), Context.MODE_PRIVATE);
+
 
 		cd = new ConnectionDetector(getApplicationContext());
 
 		// creating GPS Class object
 		gps = new GPSTracker(this);
+
+
+		saveManager = new SaveManager(this);
 	}
 
 	@Override
@@ -59,22 +65,23 @@ public class MyService extends Service {
 		// TODO Auto-generated method stub
 		super.onStart(intent, startId);
 		// your code for background process
-		String user_id = prefs.getString("user_id", "0");
+		String user_id = saveManager.getUserId();
 
-		Log.d("DEBUG", "onStart");
+		//Log.d("DEBUG", "onStart");
 
 		if (!user_id.equals("0")) {
-			Log.d("DEBUG", "user enable");
+			//Log.d("DEBUG", "user enable");
 			if (cd.isConnectingToInternet()) {
-				Log.d("DEBUG", "user connextion ok");
+				//Log.d("DEBUG", "user connextion ok");
 				if (gps.canGetLocation()) {
 					
-					Log.d("DEBUG", "user gps ok");
+					//Log.d("DEBUG", "user gps ok");
 					
 					String user_lat = String.valueOf(gps.getLatitude());
 					String user_lang = String.valueOf(gps.getLongitude());
 
-					String URL = "http://dev.ips-systems.com/sentry/test?userId="
+					String URL = Constant.URL_GPSUpdate
+							+ "userId="
 							+ user_id
 							+ "&lat="
 							+ user_lat
@@ -99,9 +106,9 @@ public class MyService extends Service {
 					@Override
 					public void onResponse(JSONObject response) {
 
-						String textResult = response.toString();
+						//String textResult = response.toString();
 
-						Log.d("DEBUG_SUCESS", textResult);
+						//Log.d("DEBUG_SUCESS", textResult);
 						try {
 							boolean status = response.getBoolean("status");
 							int id;
@@ -121,8 +128,7 @@ public class MyService extends Service {
 					@Override
 					public void onErrorResponse(VolleyError error) {
 
-						if (error != null)
-							Log.e("MainActivity", error.getMessage());
+
 
 					}
 				});

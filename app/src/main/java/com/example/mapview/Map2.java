@@ -21,15 +21,26 @@ public abstract class Map2 extends FragmentActivity {
      * Note that this may be null if the Google Play services APK is not
      * available.
      */
+
     private GoogleMap mMap;
 
-    double mLatitude = 0;
-    double mLongitude = 0;
+
+
+
+
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map2);
+
+
+
+
+
 
         // Getting Google Play availability status
         int status = GooglePlayServicesUtil
@@ -49,6 +60,10 @@ public abstract class Map2 extends FragmentActivity {
         }
 
     }
+
+
+
+
 
     @Override
     protected void onResume() {
@@ -74,18 +89,22 @@ public abstract class Map2 extends FragmentActivity {
         mapFragment.newInstance(options);
         mMap = mapFragment.getMap();
         if (mMap != null) {
-            startDemo();
+            startActivity();
         }
     }
 
     /**
      * Run the demo-specific code.
      */
-    protected abstract void startDemo();
+    protected abstract void startActivity();
 
     protected GoogleMap getMap() {
         setUpMapIfNeeded();
         return mMap;
     }
+
+
+
+
 
 }

@@ -2,8 +2,10 @@ package com.example.utils;
 
 public class Constant {
 
-	
-	public static String URL_LOGIN = "http://dev.ips-systems.com/Home/Test?";
-	
-	public static String URL_GPS = "http://dev.ips-systems.com/sentry/test?userId=159&lat=33.837307&lng=118.633900";
+
+	private static String URL_ENV = "http://dev.";
+
+	public static String URL_LOGIN = URL_ENV  + "IPS-Systems.com/Test/Login?";
+	public static String URL_GPSUpdate = URL_ENV + "ips-systems.com/Test/UpdateLocation?";
+	public static String URL_TRACKING = URL_ENV + "ips-systems.com/Test/NewStatus?";
 }

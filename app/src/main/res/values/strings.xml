@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Sign In</string>
+    <string name="app_name">IPS Sentry</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
