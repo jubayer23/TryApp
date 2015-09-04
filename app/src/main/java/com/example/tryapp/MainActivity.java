@@ -31,7 +31,7 @@ import com.example.utils.Constant;
 
 public class MainActivity extends Activity implements OnClickListener {
 
-    //change in 2nd
+    //in master change
 
     EditText et_username, et_password;
 
