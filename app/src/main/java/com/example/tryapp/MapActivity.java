@@ -119,10 +119,10 @@ public class MapActivity extends Map2 implements LocationListener,
         toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                String user_id = saveManager.getUserId();
+                String session_id = saveManager.getSessionToken();
                 if (isChecked) {
 
-                    String URL = Constant.URL_TRACKING + "userId=" + user_id + "&newStatus=ON";
+                    String URL = Constant.URL_TRACKING + "sessionId=" + session_id + "&newStatus=ON";
 
                     Intent intent = new Intent(getApplicationContext(), MyService.class);
                     PendingIntent pintent = PendingIntent.getService(
@@ -134,7 +134,7 @@ public class MapActivity extends Map2 implements LocationListener,
 
                     hitUrl(URL);
                 } else {
-                    String URL = Constant.URL_TRACKING + "userId=" + user_id + "&newStatus=OFF";
+                    String URL = Constant.URL_TRACKING + "sessionId=" + session_id + "&newStatus=OFF";
                     Intent intent = new Intent(getApplicationContext(), MyService.class);
                     PendingIntent pintent = PendingIntent.getService(
                             getApplicationContext(), 0, intent, 0);
@@ -150,6 +150,8 @@ public class MapActivity extends Map2 implements LocationListener,
     private void hitUrl(String url) {
 
 
+        Log.d("DEBUG_Map",url);
+
         final JsonObjectRequest jsObjRequest = new JsonObjectRequest(
                 Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
@@ -159,14 +161,18 @@ public class MapActivity extends Map2 implements LocationListener,
 
                         String textResult = response.toString();
 
-                        Log.d("DEBUG_TRACKING", textResult);
+                       // Log.d("DEBUG_TRACKING", textResult);
                         try {
                             boolean status = response.getBoolean("status");
                             int id;
                             if (status) {
                                 // id = response.getInt("status");
-                                Log.d("TRACKING", "status");
+                                Log.d("TRACKING", String.valueOf(status));
 
+                            }
+                            else
+                            {
+                                Log.d("TRACKING", String.valueOf(status));
                             }
 
                         } catch (JSONException e) {
@@ -295,7 +301,7 @@ public class MapActivity extends Map2 implements LocationListener,
 
     private void deleteData() {
 
-        saveManager.setUserId("0");
+        saveManager.setSessionToken("0");
 
     }
 }

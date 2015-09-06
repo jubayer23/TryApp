@@ -1,16 +1,11 @@
 package com.example.tryapp;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -29,6 +24,9 @@ import com.example.service.MyService;
 import com.example.setting.GPSTracker;
 import com.example.utils.Constant;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class MainActivity extends Activity implements OnClickListener {
 
     //in master change
@@ -42,7 +40,7 @@ public class MainActivity extends Activity implements OnClickListener {
     private static String URL;
 
     private static String KEY_STATUS = "status";
-    private static String KEY_USER_ID = "id";
+    private static String KEY_SESSION_TOKEN = "sessionId";
 
     // Progress Dialog
     private ProgressDialog pDialog;
@@ -96,6 +94,7 @@ public class MainActivity extends Activity implements OnClickListener {
             password = et_password.getText().toString();
 
             if (username.length() > 0 && password.length() > 0) {
+
                 setupApiUrl();
 
 
@@ -131,6 +130,7 @@ public class MainActivity extends Activity implements OnClickListener {
         }
     }
 
+
     private void hitUrl() {
 
         final JsonObjectRequest jsObjRequest = new JsonObjectRequest(
@@ -146,11 +146,11 @@ public class MainActivity extends Activity implements OnClickListener {
                         // Log.d("DEBUG_SUCESS", textResult);
                         try {
                             boolean status = response.getBoolean(KEY_STATUS);
-                            int id;
+                            String session_id;
                             if (status) {
-                                id = response.getInt(KEY_USER_ID);
+                                session_id = response.getString(KEY_SESSION_TOKEN);
 
-                                saveManager.setUserId(String.valueOf(id));
+                                saveManager.setSessionToken(session_id);
 
 
                                 gps.stopUsingGPS();
@@ -182,6 +182,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
             }
         });
+
         // TODO Auto-generated method stub
         AppController.getInstance().addToRequestQueue(jsObjRequest);
     }
@@ -206,7 +207,7 @@ public class MainActivity extends Activity implements OnClickListener {
         // TODO Auto-generated method stub
 
 
-        if (saveManager.getUserId().equals("0")) {
+        if (saveManager.getSessionToken().equals("0")) {
             et_password.setVisibility(View.VISIBLE);
             et_username.setVisibility(View.VISIBLE);
             btn_submit.setVisibility(View.VISIBLE);
@@ -231,7 +232,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
     private void deleteData() {
 
-        saveManager.setUserId("0");
+        saveManager.setSessionToken("0");
 
     }
 }

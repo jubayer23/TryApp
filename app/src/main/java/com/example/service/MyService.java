@@ -10,7 +10,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -65,11 +64,11 @@ public class MyService extends Service {
 		// TODO Auto-generated method stub
 		super.onStart(intent, startId);
 		// your code for background process
-		String user_id = saveManager.getUserId();
+		String session_id = saveManager.getSessionToken();
 
 		//Log.d("DEBUG", "onStart");
 
-		if (!user_id.equals("0")) {
+		if (!session_id.equals("0")) {
 			//Log.d("DEBUG", "user enable");
 			if (cd.isConnectingToInternet()) {
 				//Log.d("DEBUG", "user connextion ok");
@@ -81,8 +80,8 @@ public class MyService extends Service {
 					String user_lang = String.valueOf(gps.getLongitude());
 
 					String URL = Constant.URL_GPSUpdate
-							+ "userId="
-							+ user_id
+							+ "sessionId="
+							+ session_id
 							+ "&lat="
 							+ user_lat
 							+ "&lng="
@@ -114,7 +113,7 @@ public class MyService extends Service {
 							int id;
 							if (status) {
 								// id = response.getInt("status");
-								Log.d("DEBUG", "status");
+								Log.d("DEBUG_service", String.valueOf(status));
 
 							}
 
@@ -139,7 +138,7 @@ public class MyService extends Service {
 	@Override
 	public IBinder onBind(Intent intent) {
 		// TODO Auto-generated method stub
-		Log.d("DEBUG", "onBind");
+		//Log.d("DEBUG", "onBind");
 		return null;
 	}
 }

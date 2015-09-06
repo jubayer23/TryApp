@@ -1,15 +1,31 @@
 package com.example.appdata;
 
 import android.app.Application;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.HttpClientStack;
+import com.android.volley.toolbox.HttpStack;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 import com.example.utils.LruBitmapCache;
 
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.HttpParams;
+
+import java.util.Map;
+
 public class AppController extends Application {
+
+    private static final String SET_COOKIE_KEY = "Set-Cookie";
+    private static final String COOKIE_KEY = "Cookie";
+    private static final String SESSION_COOKIE = "sessionid";
 
     public static final String TAG = AppController.class.getSimpleName();
 
@@ -19,10 +35,13 @@ public class AppController extends Application {
 
     private static AppController mInstance;
 
+    private SharedPreferences _preferences;
+
     @Override
     public void onCreate() {
         super.onCreate();
         mInstance = this;
+        _preferences = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     public static synchronized AppController getInstance() {
@@ -30,11 +49,25 @@ public class AppController extends Application {
     }
 
     public RequestQueue getRequestQueue() {
-        if (mRequestQueue == null) {
-            mRequestQueue = Volley.newRequestQueue(getApplicationContext());
+
+
+        if (this.mRequestQueue == null) {
+
+
+            DefaultHttpClient mDefaultHttpClient = new DefaultHttpClient();
+
+            final ClientConnectionManager mClientConnectionManager = mDefaultHttpClient.getConnectionManager();
+            final HttpParams mHttpParams = mDefaultHttpClient.getParams();
+            final ThreadSafeClientConnManager mThreadSafeClientConnManager = new ThreadSafeClientConnManager(mHttpParams, mClientConnectionManager.getSchemeRegistry());
+
+            mDefaultHttpClient = new DefaultHttpClient(mThreadSafeClientConnManager, mHttpParams);
+
+            final HttpStack httpStack = new HttpClientStack(mDefaultHttpClient);
+
+            this.mRequestQueue = Volley.newRequestQueue(this.getApplicationContext(), httpStack);
         }
 
-        return mRequestQueue;
+        return this.mRequestQueue;
     }
 
     public ImageLoader getImageLoader() {
@@ -68,4 +101,7 @@ public class AppController extends Application {
             mRequestQueue.cancelAll(tag);
         }
     }
+
+
+
 }
