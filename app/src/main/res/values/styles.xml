@@ -29,10 +29,10 @@
 
     <style name="AppTheme.Dark" parent="Theme.AppCompat.NoActionBar">
 
-        <item name="colorControlNormal">@color/white</item>
+        <item name="colorControlNormal">@color/black</item>
         <item name="colorControlActivated">@color/colorPrimaryDark</item>
-        <item name="colorControlHighlight">@color/white</item>
-        <item name="android:textColorHint">@color/white</item>
+        <item name="colorControlHighlight">@color/black</item>
+        <item name="android:textColorHint">@color/monsoon</item>
         <item name="android:textColorHintInverse">@color/iron</item>
 
     </style>

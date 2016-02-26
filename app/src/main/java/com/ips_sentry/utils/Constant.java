@@ -7,13 +7,13 @@ public class Constant {
 
     public static String URL_ENV = URL_PREFIX + "dev.";
 
-    public static String URL_LOGIN = "ips-systems.com/home/MobileAppSignIn?";
+    public static String URL_LOGIN = "ips-systems.com/home/MobileAppSignIn";
     public static String URL_GPSUpdate = "IPS-Systems.com/Sentry/MobileAppUpdateLocation";
-    public static String URL_TRACKING = "IPS-Systems.com/Sentry/MobileAppNewStatus?";
+    public static String URL_TRACKING = "IPS-Systems.com/Sentry/MobileAppNewStatus";
 
-    public static String URL_SIGNOUT = "IPS-Systems.com/home/MobileAppSignOut?";
+    public static String URL_SIGNOUT = "IPS-Systems.com/home/MobileAppSignOut";
 
-    public static String URL_NEARBYPLACE = "ips-systems.com/Sentry/GetNearbyVenues?";
+    public static String URL_NEARBYPLACE = "ips-systems.com/Sentry/GetNearbyVenues";
 
 
     public static String URL_SHOW_ROUTES = "ips-systems.com/Sentry/GetRoutes";

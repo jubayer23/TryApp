@@ -8,24 +8,24 @@
         android:id="@+id/top_tab"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/blue_dark"
         android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:background="@color/blue_dark">
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/user_activity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Status : Idle"
             android:textColor="@color/white"
-            android:textSize="30sp"
-            android:text="Status : Idle"/>
+            android:textSize="30sp" />
 
         <DigitalClock
             android:id="@+id/digitalClock1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
             android:text="DigitalClock"
+            android:textColor="@color/white"
             android:textSize="70sp" />
 
     </LinearLayout>
@@ -41,55 +41,54 @@
         tools:ignore="MergeRootFrame" />
 
 
-
-
-
     <LinearLayout
         android:id="@+id/bottom_tab"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="65dp"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal">
 
-        <RelativeLayout
+        <LinearLayout
             android:id="@+id/btn_showmap"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.9"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
             android:background="@color/blue_light">
 
+            <ImageView
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:src="@drawable/map_icon"/>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="Map"/>
-        </RelativeLayout>
+                android:textStyle="bold"
+                android:text="Map" />
+        </LinearLayout>
 
-        <RelativeLayout
+        <LinearLayout
             android:id="@+id/btn_showroutes"
             android:layout_width="0dp"
+            android:gravity="center"
+            android:orientation="vertical"
             android:layout_height="match_parent"
-            android:layout_weight="0.9">
+            android:layout_weight="1">
+            <ImageView
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:src="@drawable/show_routes"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="Show Routes"/>
-        </RelativeLayout>
+                android:textStyle="bold"
+                android:text="Show Routes" />
+        </LinearLayout>
 
-        <RelativeLayout
-            android:id="@+id/btn_showhidemenu"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.2">
 
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_centerInParent="true"
-                android:src="@drawable/icon_menu"/>
-        </RelativeLayout>
     </LinearLayout>
 
     <RelativeLayout
@@ -100,45 +99,56 @@
 
     </RelativeLayout>
 
+    <RelativeLayout
+        android:id="@+id/btn_showhidemenu"
+        android:layout_width="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerInParent="true"
+            android:src="@drawable/icon_menu" />
+    </RelativeLayout>
+
 
     <LinearLayout
         android:id="@+id/hide_menu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_marginBottom="65dp"
+        android:layout_below="@+id/btn_showhidemenu"
+        android:background="@color/monsoon"
         android:gravity="center_vertical"
-        android:background="@color/material_blue_grey_950"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/tv_help"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
             android:padding="5dp"
+            android:text="About"
             android:textColor="@color/white"
-            android:text="About" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/tv_setting_preview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
             android:padding="5dp"
+            android:text="Setting Preview"
             android:textColor="@color/white"
-            android:text="Setting Preview" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/tv_logout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
             android:padding="5dp"
+            android:text="Log out"
             android:textColor="@color/white"
-            android:text="Log out" />
+            android:textSize="18sp" />
 
     </LinearLayout>
 

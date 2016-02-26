@@ -11,17 +11,16 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.ips_sentry.appdata.AppController;
 import com.ips_sentry.appdata.SaveManager;
 import com.ips_sentry.fragment.MapFragment;
@@ -31,16 +30,17 @@ import com.ips_sentry.userview.AboutPage;
 import com.ips_sentry.userview.SettingPreview;
 import com.ips_sentry.utils.Constant;
 
-import org.json.JSONObject;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by comsol on 08-Feb-16.
  */
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
 
-    RelativeLayout btn_showmap, btn_showroutes, btn_hidemenu;
+    RelativeLayout  btn_hidemenu;
 
-
+   LinearLayout btn_showmap, btn_showroutes;
 
     LinearLayout hide_menu;
     FragmentTransaction transaction;
@@ -70,7 +70,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         registerCustomReceiver();
 
+        Bundle bundle=new Bundle();
+        bundle.putBoolean(MainActivity.KEY_TRAFFIC_INFO, saveManager.getTrafficInfo());
+
         fragment_1 = new MapFragment();
+        fragment_1.setArguments(bundle);
         fragment_2 = new ShowRoutesFragment();
 
         btnToggleColor("map");
@@ -87,9 +91,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         saveManager = new SaveManager(this);
 
-        btn_showmap = (RelativeLayout) findViewById(R.id.btn_showmap);
+        btn_showmap = (LinearLayout) findViewById(R.id.btn_showmap);
         btn_showmap.setOnClickListener(this);
-        btn_showroutes = (RelativeLayout) findViewById(R.id.btn_showroutes);
+        btn_showroutes = (LinearLayout) findViewById(R.id.btn_showroutes);
         btn_showroutes.setOnClickListener(this);
         btn_hidemenu = (RelativeLayout) findViewById(R.id.btn_showhidemenu);
         btn_hidemenu.setOnClickListener(this);
@@ -209,11 +213,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         if (id == R.id.tv_logout) {
 
 
-            String URL = saveManager.getGpsUrlEnv() + Constant.URL_SIGNOUT + "sessionId=" + saveManager.getSessionToken();
-
             saveManager.setSignInOut(false);
 
-            hitUrl(URL);
+            hitUrlForSignOut(saveManager.getGpsUrlEnv() + Constant.URL_SIGNOUT);
 
             deleteSession();
 
@@ -237,31 +239,38 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void hitUrl(String url) {
+
+    private void hitUrlForSignOut(String url) {
+        // TODO Auto-generated method stub
 
 
-        Log.d("DEBUG_Map", url);
-
-        final JsonObjectRequest jsObjRequest = new JsonObjectRequest(
-                Request.Method.GET, url, null,
-                new Response.Listener<JSONObject>() {
-
+        final StringRequest req = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>() {
                     @Override
-                    public void onResponse(JSONObject response) {
+                    public void onResponse(String response) {
 
 
                     }
-
                 }, new Response.ErrorListener() {
-
             @Override
             public void onErrorResponse(VolleyError error) {
 
-
             }
-        });
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                //userId=XXX&routeId=XXX&selected=XXX
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("sessionId", saveManager.getSessionToken());
+                //Log.d("DEBUG_selected",String.valueOf(selected));
+                return params;
+            }
+        };
 
-        AppController.getInstance().addToRequestQueue(jsObjRequest);
+        req.setRetryPolicy(new DefaultRetryPolicy(3000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        // TODO Auto-generated method stub
+        AppController.getInstance().addToRequestQueue(req);
     }
 
     private void deleteSession()

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+    <LinearLayout
+        android:id="@+id/loadingPanel"
+        style="@style/GenericProgressBackground"
+        android:visibility="gone">
+
+        <ProgressBar style="@style/GenericProgressIndicator" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btnSignIn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:text="Sign In" />
+
+    <TextView
+        android:id="@+id/tvNearByVenues"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnSignIn"
+        android:layout_centerHorizontal="true"
+        android:text="Nearby Venues"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@android:color/holo_blue_light" />
+
+    <TextView
+        android:id="@+id/tvNoVenues"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvNearByVenues"
+        android:layout_centerHorizontal="true"
+        android:padding="20dp"
+        android:visibility="gone"
+        android:text="Sorry, we do not currently have any venues nearby."
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@android:color/holo_red_light" />
+
+    <ListView
+        android:id="@+id/place_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:divider="@null"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:dividerHeight="3.0sp"
+        android:layout_below="@id/tvNearByVenues"></ListView>
+
+
+</RelativeLayout>

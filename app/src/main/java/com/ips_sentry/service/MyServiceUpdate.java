@@ -112,6 +112,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
         senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
+
         // creating GPS Class object
 
 
@@ -128,6 +129,8 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
 
         senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
+
 
         findInBackground();
         return START_STICKY;
@@ -146,7 +149,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                 java.util.Date date = new java.util.Date();
                 System.out.println(new Timestamp(date.getTime()));
 
-                Log.d("TIME", String.valueOf(new Timestamp(date.getTime())));
+                //Log.d("TIME", String.valueOf(new Timestamp(date.getTime())));
                 //Toast.makeText(MyService.this, String.valueOf(new Timestamp(date.getTime())) +  "{\"statusCodeId\":1}", Toast.LENGTH_SHORT).show();
             }
 
@@ -442,7 +445,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                 }
 
 
-                if (saveManager.getUserCurrentActivity().equalsIgnoreCase(user_activity)) {
+                if (saveManager.getUserCurrentActivity().equalsIgnoreCase(user_activity) && saveManager.getRecordTime() > 0) {
 
                     long time_interval_between_user_activity = curTime - saveManager.getRecordTime();
 

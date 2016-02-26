@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -16,10 +18,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.ips_sentry.appdata.AppController;
 import com.ips_sentry.appdata.SaveManager;
 import com.ips_sentry.dialog.AlertDialogManager;
@@ -31,7 +35,10 @@ import com.ips_sentry.utils.Constant;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class MainActivity extends Activity implements OnClickListener {
+import java.util.HashMap;
+import java.util.Map;
+
+public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     //in master change
 
@@ -47,6 +54,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
     private static String KEY_STATUS = "status";
     private static String KEY_SESSION_TOKEN = "sessionId";
+    public static String KEY_TRAFFIC_INFO = "showTrafficInfo";
 
     // Progress Dialog
     private ProgressDialog pDialog;
@@ -89,15 +97,13 @@ public class MainActivity extends Activity implements OnClickListener {
 
         }
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+              WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.activity_main);
 
         init();
-
-
 
 
         myAlarm = new com.ips_sentry.AlarmManager.AlarmManager(this);
@@ -116,7 +122,6 @@ public class MainActivity extends Activity implements OnClickListener {
         visibleInvisible();
 
         if (!saveManager.getSessionToken().equals("0")) {
-
 
 
         }
@@ -170,7 +175,7 @@ public class MainActivity extends Activity implements OnClickListener {
         tv_power_by = (TextView) findViewById(R.id.tv_power_by);
         tv_power_by.setOnClickListener(this);
 
-        btn_setting = (ImageView)findViewById(R.id.btn_usersetting);
+        btn_setting = (ImageView) findViewById(R.id.btn_usersetting);
         btn_setting.setOnClickListener(this);
 
     }
@@ -192,7 +197,6 @@ public class MainActivity extends Activity implements OnClickListener {
 
             updateUserNameAndPassWord();
 
-            setupApiUrl();
 
 
             gps = new GPSTracker(this);
@@ -217,7 +221,7 @@ public class MainActivity extends Activity implements OnClickListener {
             pDialog.setCancelable(false);
             pDialog.show();
 
-            hitUrl();
+            hitUrl(saveManager.getGpsUrlEnv() + Constant.URL_LOGIN);
 
 
             // Adding request to request queue
@@ -226,21 +230,6 @@ public class MainActivity extends Activity implements OnClickListener {
         }
         if (id == R.id.logout) {
 
-            String URL = saveManager.getGpsUrlEnv() + Constant.URL_SIGNOUT + "sessionId=" + saveManager.getSessionToken();
-
-            hitUrlSingOut(URL);
-
-            stopService(new Intent(MainActivity.this, MyServiceUpdate.class));
-
-            saveManager.setSignInOut(false);
-
-            deleteData();
-
-            myAlarm.stopAlarm();
-
-            myAlarm.stopAlarmForChecking();
-
-            visibleInvisible();
         }
 
         if (id == R.id.mapshow) {
@@ -254,17 +243,14 @@ public class MainActivity extends Activity implements OnClickListener {
             startActivity(intent);
         }
 
-        if(id == R.id.tv_power_by)
-        {
-                Intent intent = new Intent(MainActivity.this,WebViewActivity.class);
-                startActivity(intent);
+        if (id == R.id.tv_power_by) {
+            Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
+            startActivity(intent);
         }
 
-        if(id == R.id.btn_usersetting)
-        {
+        if (id == R.id.btn_usersetting) {
 
             showDialogForSetting();
-
 
 
         }
@@ -276,31 +262,31 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
 
-    private void hitUrl() {
+    private void hitUrl(String url) {
+        // TODO Auto-generated method stub
 
-        final JsonObjectRequest jsObjRequest = new JsonObjectRequest(
-                Request.Method.GET, URL, null,
-                new Response.Listener<JSONObject>() {
 
+        final StringRequest req = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>() {
                     @Override
-                    public void onResponse(JSONObject response) {
-
+                    public void onResponse(String response) {
                         pDialog.dismiss();
-                        String textResult = response.toString();
 
-                        // Log.d("DEBUG_SUCESS", textResult);
                         try {
-                            boolean status = response.getBoolean(KEY_STATUS);
+                            JSONObject jsonObject = new JSONObject(response);
+                            boolean status = jsonObject.getBoolean(KEY_STATUS);
                             String session_id;
                             if (status) {
 
 
-                                session_id = response.getString(KEY_SESSION_TOKEN);
+                                session_id = jsonObject.getString(KEY_SESSION_TOKEN);
 
 
                                 saveManager.setSignInOut(true);
 
                                 saveManager.setSessionToken(session_id);
+
+                                saveManager.setTrafficInfo(jsonObject.getBoolean(KEY_TRAFFIC_INFO));
 
 
                                 gps.stopUsingGPS();
@@ -322,59 +308,38 @@ public class MainActivity extends Activity implements OnClickListener {
                             } else {
                                 alert.showAlertDialog(MainActivity.this, "Error", "Invalid credentials!", false);
                             }
-
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+
+
                     }
-
                 }, new Response.ErrorListener() {
-
             @Override
             public void onErrorResponse(VolleyError error) {
                 pDialog.dismiss();
-               // if (error != null)
-                    //Log.e("MainActivity", error.getMessage());
 
             }
-        });
-
-        // TODO Auto-generated method stub
-        AppController.getInstance().addToRequestQueue(jsObjRequest);
-    }
-
-    private void hitUrlSingOut(String url) {
-        // Log.d("DEBUG_signout", url);
-
-        final JsonObjectRequest jsObjRequest = new JsonObjectRequest(
-                Request.Method.GET, url, null,
-                new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-
-
-                    }
-
-                }, new Response.ErrorListener() {
-
+        }) {
             @Override
-            public void onErrorResponse(VolleyError error) {
-
-
+            protected Map<String, String> getParams() {
+                //userId=XXX&routeId=XXX&selected=XXX
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("username", username);
+                params.put("password", password);
+                //Log.d("DEBUG_selected",String.valueOf(selected));
+                return params;
             }
-        });
+        };
 
-        AppController.getInstance().addToRequestQueue(jsObjRequest);
+        req.setRetryPolicy(new DefaultRetryPolicy(3000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        // TODO Auto-generated method stub
+        AppController.getInstance().addToRequestQueue(req);
     }
 
-    public void setupApiUrl() {
-        URL = saveManager.getGpsUrlEnv() + Constant.URL_LOGIN + "username=" + username + "&password="
-                + password;
 
-        // Log.d("URL", URL);
 
-    }
 
 
     private void visibleInvisible() {
@@ -407,11 +372,11 @@ public class MainActivity extends Activity implements OnClickListener {
 
     }
 
-    public boolean validate(String username,String password) {
+    public boolean validate(String username, String password) {
         boolean valid = true;
 
 
-        if (username.isEmpty() ) {
+        if (username.isEmpty()) {
             et_username.setError("Enter Username");
             valid = false;
         } else {
@@ -425,14 +390,11 @@ public class MainActivity extends Activity implements OnClickListener {
             et_password.setError(null);
         }
 
-        if(!(username.isEmpty()&&password.isEmpty()))
-        {
-            if(username.isEmpty()&&!password.isEmpty())
-            {
-                 et_username.requestFocus();
+        if (!(username.isEmpty() && password.isEmpty())) {
+            if (username.isEmpty() && !password.isEmpty()) {
+                et_username.requestFocus();
             }
-            if(!username.isEmpty()&&password.isEmpty())
-            {
+            if (!username.isEmpty() && password.isEmpty()) {
                 et_password.requestFocus();
             }
         }
@@ -446,17 +408,16 @@ public class MainActivity extends Activity implements OnClickListener {
                 >= Configuration.SCREENLAYOUT_SIZE_LARGE;
     }
 
-    public void showDialogForSetting()
-    {
-       final Dialog dialog = new Dialog(this,
+    public void showDialogForSetting() {
+        final Dialog dialog = new Dialog(this,
                 android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
         dialog.setCancelable(true);
         dialog.setContentView(R.layout.dialog_settingpassword);
 
 
-        final EditText et_dialog_password = (EditText)dialog.findViewById(R.id.dialog_password);
+        final EditText et_dialog_password = (EditText) dialog.findViewById(R.id.dialog_password);
 
-        Button btn_submit = (Button)dialog.findViewById(R.id.dialog_submit);
+        Button btn_submit = (Button) dialog.findViewById(R.id.dialog_submit);
 
         btn_submit.setOnClickListener(new OnClickListener() {
             @Override
@@ -464,18 +425,16 @@ public class MainActivity extends Activity implements OnClickListener {
                 String password = et_dialog_password.getText().toString().trim();
 
 
-                if (password.isEmpty() ) {
+                if (password.isEmpty()) {
                     et_dialog_password.setError("Enter Password");
                     return;
                 }
-                if(password.equals(Constant.ADMIN_PASSWORD))
-                {
-                    Intent intent = new Intent(MainActivity.this,UserSettingActivity.class);
+                if (password.equals(Constant.ADMIN_PASSWORD)) {
+                    Intent intent = new Intent(MainActivity.this, UserSettingActivity.class);
                     startActivity(intent);
 
                     dialog.dismiss();
-                }else
-                {
+                } else {
                     et_dialog_password.setError("Wrong Password");
                 }
             }
