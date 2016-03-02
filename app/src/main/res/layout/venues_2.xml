@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/card_background"
+    android:orientation="vertical">
+
+
+    <com.android.volley.toolbox.NetworkImageView
+        android:id="@+id/product_thumb"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_gravity="center" />
+
+
+    <TextView
+        android:id="@+id/product_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:padding="1dp"
+        android:text="Product Name Product Name Product Name"
+        android:textColor="#123456"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/product_details"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:padding="5dp"
+        android:text="Product Name"
+        android:textSize="15sp" />
+
+</LinearLayout>
+
