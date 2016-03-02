@@ -33,10 +33,6 @@ public class MapFragment extends Fragment {
     private GoogleMap mMap;
     private Bundle mBundle;
 
-
-   // private SensorManager sensorManager;
-    //private Sensor sensorLight;
-
     private boolean flag_traffic;
 
 
@@ -68,7 +64,6 @@ public class MapFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        //sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
     }
 
 
@@ -116,18 +111,6 @@ public class MapFragment extends Fragment {
         super.onResume();
         mMapView.onResume();
 
-
-        // sensorLight = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-        // if (sensorLight != null) {
-        //textLIGHT_available.setText("Sensor.TYPE_LIGHT Available");
-        //      sensorManager.registerListener(
-        //              LightSensorListener,
-        //              sensorLight,
-        //              SensorManager.SENSOR_DELAY_NORMAL);
-
-        // } else {
-        //     //textLIGHT_available.setText("Sensor.TYPE_LIGHT NOT Available");
-        // }
     }
 
     @Override
@@ -135,7 +118,6 @@ public class MapFragment extends Fragment {
         super.onPause();
         mMapView.onPause();
 
-        //sensorManager.unregisterListener(LightSensorListener, sensorLight);
     }
 
     @Override
@@ -144,26 +126,5 @@ public class MapFragment extends Fragment {
         super.onDestroy();
     }
 
-    SensorEventListener LightSensorListener
-            = new SensorEventListener() {
-
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            if (event.sensor.getType() == Sensor.TYPE_LIGHT) {
-                //Log.d("DEBUG_light",String.valueOf(event.values[0]));
-
-                if (event.values[0] <= 1) {
-
-                }
-            }
-        }
-
-    };
 
 }

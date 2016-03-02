@@ -77,11 +77,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         fragment_1.setArguments(bundle);
         fragment_2 = new ShowRoutesFragment();
 
-        btnToggleColor("map");
+        btnToggleColor("show_routes");
         fragmentManager = getSupportFragmentManager();
         transaction = fragmentManager
                 .beginTransaction();
-        transaction.add(R.id.container, fragment_1, "first");
+        transaction.add(R.id.container, fragment_2, "first");
         transaction.commit();
 
 
@@ -154,7 +154,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             if (fragment_1.isAdded()) { // if the fragment is already in container
                 transaction.show(fragment_1);
             } else { // fragment needs to be added to frame container
-                transaction.add(R.id.container, fragment_1, "first");
+                transaction.add(R.id.container, fragment_1, "second");
             }
             // Hide fragment B
             if (fragment_2.isAdded()) {
@@ -175,7 +175,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             if (fragment_2.isAdded()) { // if the fragment is already in container
                 transaction.show(fragment_2);
             } else { // fragment needs to be added to frame container
-                transaction.add(R.id.container, fragment_2, "second");
+                transaction.add(R.id.container, fragment_2, "first");
             }
             // Hide fragment B
             if (fragment_1.isAdded()) {

@@ -49,43 +49,44 @@
         android:orientation="horizontal">
 
         <LinearLayout
-            android:id="@+id/btn_showmap"
+            android:id="@+id/btn_showroutes"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical"
-            android:background="@color/blue_light">
+            android:orientation="vertical">
 
             <ImageView
                 android:layout_width="35dp"
                 android:layout_height="35dp"
-                android:src="@drawable/map_icon"/>
+                android:src="@drawable/show_routes" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textStyle="bold"
-                android:text="Map" />
+                android:text="Show Routes"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/btn_showroutes"
+            android:id="@+id/btn_showmap"
             android:layout_width="0dp"
-            android:gravity="center"
-            android:orientation="vertical"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:background="@color/blue_light"
+            android:gravity="center"
+            android:orientation="vertical">
+
             <ImageView
                 android:layout_width="35dp"
                 android:layout_height="35dp"
-                android:src="@drawable/show_routes"/>
+                android:src="@drawable/map_icon" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textStyle="bold"
-                android:text="Show Routes" />
+                android:text="Map"
+                android:textStyle="bold" />
         </LinearLayout>
 
 
@@ -102,8 +103,8 @@
     <RelativeLayout
         android:id="@+id/btn_showhidemenu"
         android:layout_width="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true">
 
         <ImageView
             android:layout_width="40dp"
