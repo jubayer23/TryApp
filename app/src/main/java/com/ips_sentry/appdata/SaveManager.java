@@ -24,7 +24,7 @@ public class SaveManager {
     private static final String KEY_USER_CURRENT_ACTIVITY= "user_activity";
     private static final String KEY_RECORD_TIME= "record_time";
     private static final String KEY_TRAFFIC_INFO= "showTrafficInfo";
-
+    private static final String KEY_SHOWINDIVIDUAL= "showIndividualLabels";
 
     private SharedPreferences.Editor editor;
     private Context context;
@@ -49,14 +49,23 @@ public class SaveManager {
     public String getSessionToken() {
         return mSharedPreferences.getString(KEY_SESSION_TOKEN, "0");
     }
+
     public void setTrafficInfo(Boolean value) {
         editor.putBoolean(KEY_TRAFFIC_INFO, value);
         editor.apply();
     }
-
     public Boolean getTrafficInfo() {
         return mSharedPreferences.getBoolean(KEY_TRAFFIC_INFO, false);
     }
+
+    public void setIndividualLabel(Boolean value) {
+        editor.putBoolean(KEY_SHOWINDIVIDUAL, value);
+        editor.apply();
+    }
+    public Boolean getIndividualLabel() {
+        return mSharedPreferences.getBoolean(KEY_SHOWINDIVIDUAL, false);
+    }
+
     public void setUserName(String value) {
         editor.putString(KEY_USER_NAME, value);
         editor.apply();

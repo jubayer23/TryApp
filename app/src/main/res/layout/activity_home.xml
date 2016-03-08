@@ -131,7 +131,7 @@
             android:padding="5dp"
             android:text="About"
             android:textColor="@color/white"
-            android:textSize="18sp" />
+            android:textSize="30sp" />
 
         <TextView
             android:id="@+id/tv_setting_preview"
@@ -140,7 +140,7 @@
             android:padding="5dp"
             android:text="Setting Preview"
             android:textColor="@color/white"
-            android:textSize="18sp" />
+            android:textSize="30sp" />
 
         <TextView
             android:id="@+id/tv_logout"
@@ -149,7 +149,7 @@
             android:padding="5dp"
             android:text="Log out"
             android:textColor="@color/white"
-            android:textSize="18sp" />
+            android:textSize="30sp" />
 
     </LinearLayout>
 

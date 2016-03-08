@@ -72,6 +72,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         Bundle bundle=new Bundle();
         bundle.putBoolean(MainActivity.KEY_TRAFFIC_INFO, saveManager.getTrafficInfo());
+        bundle.putBoolean(MainActivity.KEY_SHOWINDIVIDUAL_LABEL, saveManager.getIndividualLabel());
 
         fragment_1 = new MapFragment();
         fragment_1.setArguments(bundle);

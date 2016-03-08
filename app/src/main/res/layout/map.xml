@@ -7,4 +7,13 @@
         android:id="@+id/map_2"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+
+    <ImageView
+        android:id="@+id/myLocationButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_margin="5dp"
+        android:src="@drawable/mylocation_icon_selected"/>
 </RelativeLayout>

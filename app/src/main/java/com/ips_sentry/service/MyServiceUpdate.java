@@ -92,8 +92,11 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
 
     //this is user for BRORCASR RECEIVER KEY
     public static final String KEY_USER_STATUS = "user_status";
+    public static final String KEY_SENTRYINDIVIDUAL_RESPONSE = "sentryIndividuals_response";
 
     private static boolean new_start = true;
+
+    public static final String KEY_MARKERUPDATE = "MARKERUPDATE";
 
     @Override
     public void onCreate() {
@@ -248,6 +251,10 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                                 //startAlarm();
                                 //startAlarm();
                                 //handler.sendEmptyMessage(0);
+                                //Fire the intent with activity name & confidence
+                                Intent i = new Intent(getPackageName() + KEY_MARKERUPDATE);
+                                i.putExtra(KEY_SENTRYINDIVIDUAL_RESPONSE, response);
+                                LocalBroadcastManager.getInstance(_context).sendBroadcast(i);
 
 
                             } else if (status == 2) {

@@ -1,6 +1,5 @@
 package com.ips_sentry.ips;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -8,10 +7,8 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,7 +19,6 @@ import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.ips_sentry.appdata.AppController;
 import com.ips_sentry.appdata.SaveManager;
@@ -55,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     private static String KEY_STATUS = "status";
     private static String KEY_SESSION_TOKEN = "sessionId";
     public static String KEY_TRAFFIC_INFO = "showTrafficInfo";
+    public static String KEY_SHOWINDIVIDUAL_LABEL = "showIndividualLabels";
 
     // Progress Dialog
     private ProgressDialog pDialog;
@@ -281,6 +278,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
                                 session_id = jsonObject.getString(KEY_SESSION_TOKEN);
 
+                                //Log.d("DEBUG",session_id);
+
 
                                 saveManager.setSignInOut(true);
 
@@ -288,6 +287,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
                                 saveManager.setTrafficInfo(jsonObject.getBoolean(KEY_TRAFFIC_INFO));
 
+                                saveManager.setIndividualLabel(jsonObject.getBoolean(KEY_SHOWINDIVIDUAL_LABEL));
 
                                 gps.stopUsingGPS();
                                 saveManager.setRecordTime(0);
