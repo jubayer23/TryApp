@@ -24,12 +24,12 @@ import java.util.List;
  */
 public class UserSettingActivity extends AppCompatActivity implements View.OnClickListener {
 
-    Spinner spinner_gps_interval, spinner_url_env;
+    Spinner spinner_gps_interval, spinner_url_env, spinner_stopped_threshold,spinner_dim_delay;
     TextView tv_gps_url;
 
     private SaveManager saveManager;
 
-    List<String> list_gps_interval, list_url_env;
+    List<String> list_gps_interval, list_url_env, list_stopped_threshold,list_dim_delay;
 
     Button btn_save;
 
@@ -73,14 +73,11 @@ public class UserSettingActivity extends AppCompatActivity implements View.OnCli
 
                 item = item.trim();
 
-                if(item.equalsIgnoreCase(Constant.url_env[3]))
-                {
-                    saveManager.setGpsUrlEnv(Constant.URL_PREFIX );
-                }else
-                {
-                    saveManager.setGpsUrlEnv(Constant.URL_PREFIX + item + ".");
+                if (item.equalsIgnoreCase(Constant.url_env[3])) {
+                    saveManager.setUrlEnv(Constant.URL_PREFIX);
+                } else {
+                    saveManager.setUrlEnv(Constant.URL_PREFIX + item + ".");
                 }
-
 
 
                 updateGpsUrlTextView();
@@ -92,6 +89,67 @@ public class UserSettingActivity extends AppCompatActivity implements View.OnCli
             }
         });
 
+
+        spinner_stopped_threshold.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String item = parent.getItemAtPosition(position).toString();
+
+                item = item.trim();
+
+
+                saveManager.setStoppedThreshold(item);
+
+
+                updateGpsUrlTextView();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        spinner_dim_delay.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String item = parent.getItemAtPosition(position).toString();
+                saveManager.setDimDelay(item);
+
+                if(item.equalsIgnoreCase("Never"))
+                {
+                    saveManager.setSelectedDimDelay(-1);
+                }else
+                {
+                    String s[] = item.split(" ");
+                    int value;
+                    switch (s[1]){
+
+                        case Constant.SECONDS:
+                            value = Integer.parseInt(s[0]);
+                            saveManager.setSelectedDimDelay(value * 1000);
+                            break;
+                        case Constant.MINUTES:
+                            value = Integer.parseInt(s[0]);
+                            saveManager.setSelectedDimDelay(value * 60 * 1000);
+                            break;
+                        case Constant.HOUR:
+                            value = Integer.parseInt(s[0]);
+                            saveManager.setSelectedDimDelay(value * 3600 * 1000);
+                            break;
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+
+
     }
 
     private void init() {
@@ -102,11 +160,19 @@ public class UserSettingActivity extends AppCompatActivity implements View.OnCli
 
         list_url_env = new ArrayList<String>();
 
+        list_stopped_threshold = new ArrayList<String>();
+
+        list_dim_delay = new ArrayList<>();
+
         tv_gps_url = (TextView) findViewById(R.id.setting_tv_gps_url);
 
         spinner_gps_interval = (Spinner) findViewById(R.id.setting_spinner_gps_interval);
 
         spinner_url_env = (Spinner) findViewById(R.id.setting_spinner_url_env);
+
+        spinner_stopped_threshold = (Spinner) findViewById(R.id.setting_spinner_stopped_threshold);
+
+        spinner_dim_delay = (Spinner) findViewById(R.id.setting_spinner_dim_delay);
 
         btn_save = (Button) findViewById(R.id.setting_save);
 
@@ -136,12 +202,10 @@ public class UserSettingActivity extends AppCompatActivity implements View.OnCli
         spinner_gps_interval.setAdapter(dataAdapter);
 
         /***********************************************/
-        if(saveManager.getGpsUrlEnv().length() > Constant.URL_PREFIX.length())
-        {
-            list_url_env.add(saveManager.getGpsUrlEnv().substring(Constant.URL_PREFIX.length(),saveManager.getGpsUrlEnv().length()-1));
+        if (saveManager.getUrlEnv().length() > Constant.URL_PREFIX.length()) {
+            list_url_env.add(saveManager.getUrlEnv().substring(Constant.URL_PREFIX.length(), saveManager.getUrlEnv().length() - 1));
 
-        }else
-        {
+        } else {
             list_url_env.add(Constant.url_env[3]);
         }
 
@@ -158,23 +222,53 @@ public class UserSettingActivity extends AppCompatActivity implements View.OnCli
         spinner_url_env.setAdapter(dataAdapter_url_env);
 
 
+        /****************************************************************************/
+
+        list_stopped_threshold.add(saveManager.getStoppedThreshold());
+
+        for (int i = 0; i < Constant.stopped_threshold.length; i++) {
+
+            if (list_stopped_threshold.contains(Constant.stopped_threshold[i])) continue;
+
+            list_stopped_threshold.add(Constant.stopped_threshold[i]);
+
+        }
+        ArrayAdapter<String> stoppedThresholdAdapter = new ArrayAdapter<String>
+                (this, R.layout.spinner_item, list_stopped_threshold);
+
+        spinner_stopped_threshold.setAdapter(stoppedThresholdAdapter);
+
+
+        /****************************************************************************/
+
+        list_dim_delay.add(saveManager.getDimDelay());
+
+        for (int i = 0; i < Constant.dim_delay.length; i++) {
+
+            if (list_dim_delay.contains(Constant.dim_delay[i])) continue;
+
+            list_dim_delay.add(Constant.dim_delay[i]);
+
+        }
+        ArrayAdapter<String> dimDelayAdapter = new ArrayAdapter<String>
+                (this, R.layout.spinner_item, list_dim_delay);
+
+        spinner_dim_delay.setAdapter(dimDelayAdapter);
+
+
     }
 
     private void updateGpsUrlTextView() {
 
-        if(saveManager.getGpsUrlEnv().length() > Constant.URL_PREFIX.length())
-        {
-            String next = saveManager.getGpsUrlEnv().substring(0, Constant.URL_PREFIX.length()) +
-                    "<font color='#59A5E5'>" + saveManager.getGpsUrlEnv().substring(Constant.URL_PREFIX.length(),saveManager.getGpsUrlEnv().length()-1) + "</font>" + ".";
+        if (saveManager.getUrlEnv().length() > Constant.URL_PREFIX.length()) {
+            String next = saveManager.getUrlEnv().substring(0, Constant.URL_PREFIX.length()) +
+                    "<font color='#59A5E5'>" + saveManager.getUrlEnv().substring(Constant.URL_PREFIX.length(), saveManager.getUrlEnv().length() - 1) + "</font>" + ".";
             tv_gps_url.setText(Html.fromHtml(next + Constant.URL_GPSUpdate));
-        }else
-        {
-            //String next = saveManager.getGpsUrlEnv().substring(0, Constant.URL_PREFIX.length()) +
-             //       "<font color='#59A5E5'>" + saveManager.getGpsUrlEnv().substring(Constant.URL_PREFIX.length(),saveManager.getGpsUrlEnv().length()-1) + "</font>";
-            tv_gps_url.setText(Html.fromHtml(saveManager.getGpsUrlEnv() + Constant.URL_GPSUpdate));
+        } else {
+            //String next = saveManager.getUrlEnv().substring(0, Constant.URL_PREFIX.length()) +
+            //       "<font color='#59A5E5'>" + saveManager.getUrlEnv().substring(Constant.URL_PREFIX.length(),saveManager.getUrlEnv().length()-1) + "</font>";
+            tv_gps_url.setText(Html.fromHtml(saveManager.getUrlEnv() + Constant.URL_GPSUpdate));
         }
-
-
 
 
     }
@@ -186,7 +280,7 @@ public class UserSettingActivity extends AppCompatActivity implements View.OnCli
         if (id == R.id.setting_save) {
 
 
-            saveManager.setGpsUrl(saveManager.getGpsUrlEnv() + Constant.URL_GPSUpdate);
+            saveManager.setGpsUrl(saveManager.getUrlEnv() + Constant.URL_GPSUpdate);
 
             Toast.makeText(UserSettingActivity.this, "Saved Successfull", Toast.LENGTH_LONG).show();
 

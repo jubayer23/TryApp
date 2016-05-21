@@ -4,6 +4,8 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
+    <color name="colorAccent_2">#e90452</color>
+
     <color name="white">#ffffffff</color>
     <color name="black">#ff000000</color>
 
@@ -28,6 +30,8 @@
     <color name="base">#AAAAAA</color>
     <color name="iron">#CCCCCC</color>
     <color name="green">#15F42F</color>
+    <color name="green_2">#f61f9b0c</color>
+    <color name="green_light">#67efb5</color>
 
 
 

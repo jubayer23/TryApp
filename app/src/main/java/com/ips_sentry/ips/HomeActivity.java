@@ -5,13 +5,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -25,10 +28,12 @@ import com.ips_sentry.appdata.AppController;
 import com.ips_sentry.appdata.SaveManager;
 import com.ips_sentry.fragment.MapFragment;
 import com.ips_sentry.fragment.ShowRoutesFragment;
+import com.ips_sentry.fragment.ValetFragment;
 import com.ips_sentry.service.MyServiceUpdate;
 import com.ips_sentry.userview.AboutPage;
 import com.ips_sentry.userview.SettingPreview;
 import com.ips_sentry.utils.Constant;
+import com.ips_sentry.utils.DummyActivity;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,13 +43,13 @@ import java.util.Map;
  */
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
 
-    RelativeLayout  btn_hidemenu;
+    RelativeLayout btn_hidemenu;
 
-   LinearLayout btn_showmap, btn_showroutes;
+    LinearLayout btn_showmap, btn_showroutes, btn_showvalet;
 
     LinearLayout hide_menu;
     FragmentTransaction transaction;
-    Fragment fragment_1, fragment_2;
+    Fragment fragment_1, fragment_2, fragment_3;
     FragmentManager fragmentManager;
 
     RelativeLayout dummy_click_listener;
@@ -55,8 +60,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     SaveManager saveManager;
 
+    private static boolean screenDimOnFlag = false;
 
-    private BroadcastReceiver receiver;
+
+    private BroadcastReceiver receiverForSetUserActivity, receiverScreenDimTurnOn;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -70,13 +77,14 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         registerCustomReceiver();
 
-        Bundle bundle=new Bundle();
+        Bundle bundle = new Bundle();
         bundle.putBoolean(MainActivity.KEY_TRAFFIC_INFO, saveManager.getTrafficInfo());
         bundle.putBoolean(MainActivity.KEY_SHOWINDIVIDUAL_LABEL, saveManager.getIndividualLabel());
 
         fragment_1 = new MapFragment();
         fragment_1.setArguments(bundle);
         fragment_2 = new ShowRoutesFragment();
+        fragment_3 = new ValetFragment();
 
         btnToggleColor("show_routes");
         fragmentManager = getSupportFragmentManager();
@@ -96,6 +104,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         btn_showmap.setOnClickListener(this);
         btn_showroutes = (LinearLayout) findViewById(R.id.btn_showroutes);
         btn_showroutes.setOnClickListener(this);
+        btn_showvalet = (LinearLayout) findViewById(R.id.btn_valet);
+        btn_showvalet.setOnClickListener(this);
+
         btn_hidemenu = (RelativeLayout) findViewById(R.id.btn_showhidemenu);
         btn_hidemenu.setOnClickListener(this);
 
@@ -122,8 +133,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void registerCustomReceiver() {
-        //Broadcast receiver
-        receiver = new BroadcastReceiver() {
+        //Broadcast receiverForSetUserActivity
+        receiverForSetUserActivity = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String user_activity = intent.getStringExtra(MyServiceUpdate.KEY_USER_STATUS);
@@ -134,8 +145,59 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(getPackageName() + "ImActive");
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiverForSetUserActivity, filter);
+
+        receiverScreenDimTurnOn = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                boolean onORoff = intent.getBooleanExtra(MyServiceUpdate.KEY_SCREEN_DIM_ON_OFF, false);
+
+                if (onORoff) {
+                    screenDimOnFlag = true;
+                    //Settings.System.putInt(HomeActivity.this.getContentResolver(),
+                    //        Settings.System.SCREEN_BRIGHTNESS, 1);
+
+                    // Log.d("DEBUG","it here 1");
+
+                    WindowManager.LayoutParams lp = getWindow().getAttributes();
+                    lp.screenBrightness = 0.0f;// 100 / 100.0f;
+                    getWindow().setAttributes(lp);
+
+                   // Intent globalService = new Intent(HomeActivity.this, GlobalTouchService.class);
+                   // startService(globalService);
+
+                } else {
+
+                    float curBrightnessValue = 255;
+                    try {
+                        curBrightnessValue = android.provider.Settings.System.getInt(
+                                getContentResolver(), android.provider.Settings.System.SCREEN_BRIGHTNESS);
+                        //Log.d("DEBUG",String.valueOf(getWindow().getAttributes().screenBrightness));
+                    } catch (Settings.SettingNotFoundException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    // Settings.System.putInt(HomeActivity.this.getContentResolver(),
+                    //        Settings.System.SCREEN_BRIGHTNESS, 255);
+
+                    WindowManager.LayoutParams lp = getWindow().getAttributes();
+                    lp.screenBrightness = curBrightnessValue / (float) 255;
+                    getWindow().setAttributes(lp);
+
+                    //we start this activity only for refresh the screem
+                    startActivity(new Intent(HomeActivity.this, DummyActivity.class));
+                }
+
+
+            }
+        };
+
+        IntentFilter filter_2 = new IntentFilter();
+        filter_2.addAction(getPackageName() + MyServiceUpdate.KEY_BROADCAST_FOR_SCREEN_DIM);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiverScreenDimTurnOn, filter_2);
     }
+
 
     @Override
     public void onBackPressed() {
@@ -161,6 +223,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             if (fragment_2.isAdded()) {
                 transaction.hide(fragment_2);
             }
+            if (fragment_3.isAdded()) {
+                transaction.hide(fragment_3);
+            }
             // Hide fragment C
             // Commit changes
             transaction.commit();
@@ -181,6 +246,34 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             // Hide fragment B
             if (fragment_1.isAdded()) {
                 transaction.hide(fragment_1);
+            }
+            if (fragment_3.isAdded()) {
+                transaction.hide(fragment_3);
+            }
+            // Hide fragment C
+            // Commit changes
+            transaction.commit();
+
+
+        }
+        if (id == R.id.btn_valet) {
+            btnToggleColor("show_valet");
+
+            transaction = getSupportFragmentManager()
+                    .beginTransaction();
+
+            if (fragment_3.isAdded()) { // if the fragment is already in container
+                transaction.show(fragment_3);
+                fragment_3.onResume();
+            } else { // fragment needs to be added to frame container
+                transaction.add(R.id.container, fragment_3, "third");
+            }
+            // Hide fragment B
+            if (fragment_1.isAdded()) {
+                transaction.hide(fragment_1);
+            }
+            if (fragment_2.isAdded()) {
+                transaction.hide(fragment_2);
             }
             // Hide fragment C
             // Commit changes
@@ -216,7 +309,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
             saveManager.setSignInOut(false);
 
-            hitUrlForSignOut(saveManager.getGpsUrlEnv() + Constant.URL_SIGNOUT);
+            hitUrlForSignOut(saveManager.getUrlEnv() + Constant.URL_SIGNOUT);
 
             deleteSession();
 
@@ -284,15 +377,59 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         if (btn_name.equalsIgnoreCase("map")) {
             btn_showmap.setBackgroundColor(getResources().getColor(R.color.blue_light));
             btn_showroutes.setBackgroundColor(getResources().getColor(R.color.white));
-        } else {
+            btn_showvalet.setBackgroundColor(getResources().getColor(R.color.white));
+        } else if (btn_name.equalsIgnoreCase("show_routes")) {
             btn_showmap.setBackgroundColor(getResources().getColor(R.color.white));
             btn_showroutes.setBackgroundColor(getResources().getColor(R.color.blue_light));
+            btn_showvalet.setBackgroundColor(getResources().getColor(R.color.white));
+        } else {
+            btn_showmap.setBackgroundColor(getResources().getColor(R.color.white));
+            btn_showroutes.setBackgroundColor(getResources().getColor(R.color.white));
+            btn_showvalet.setBackgroundColor(getResources().getColor(R.color.blue_light));
         }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        //Intent globalService = new Intent(HomeActivity.this, GlobalTouchService.class);
+       // stopService(globalService);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverForSetUserActivity);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverScreenDimTurnOn);
     }
+
+
+    public boolean dispatchTouchEvent(MotionEvent event) {
+
+        if (screenDimOnFlag) {
+            screenDimOnFlag = false;
+
+            float curBrightnessValue = 255;
+            try {
+                curBrightnessValue = android.provider.Settings.System.getInt(
+                        getContentResolver(), android.provider.Settings.System.SCREEN_BRIGHTNESS);
+                //Log.d("DEBUG",String.valueOf(getWindow().getAttributes().screenBrightness));
+            } catch (Settings.SettingNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            // Settings.System.putInt(HomeActivity.this.getContentResolver(),
+            //        Settings.System.SCREEN_BRIGHTNESS, 255);
+
+            WindowManager.LayoutParams lp = getWindow().getAttributes();
+            lp.screenBrightness = curBrightnessValue / (float) 255;
+            getWindow().setAttributes(lp);
+
+            //we start this activity only for refresh the screem
+            startActivity(new Intent(HomeActivity.this, DummyActivity.class));
+        }
+
+        MyServiceUpdate.lastUpdateForScreenOff = 0;
+
+        return super.dispatchTouchEvent(event);
+
+
+    }
+
+
 }

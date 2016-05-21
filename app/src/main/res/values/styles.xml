@@ -33,7 +33,7 @@
         <item name="colorControlActivated">@color/colorPrimaryDark</item>
         <item name="colorControlHighlight">@color/black</item>
         <item name="android:textColorHint">@color/monsoon</item>
-        <item name="android:textColorHintInverse">@color/iron</item>
+        <item name="android:textColorHintInverse">@color/black</item>
 
     </style>
 

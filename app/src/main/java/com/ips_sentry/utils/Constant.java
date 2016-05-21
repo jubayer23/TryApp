@@ -2,14 +2,17 @@ package com.ips_sentry.utils;
 
 public class Constant {
 
+    public static final String APP_VERSION = "1.21";
 
     public static final String URL_PREFIX = "http://";
 
     public static String URL_ENV = URL_PREFIX + "dev.";
 
     public static String URL_LOGIN = "ips-systems.com/home/MobileAppSignIn";
+    public static String URL_UerCheckIn = "ips-systems.com/home/MobileAppUserCheckIn";
     public static String URL_GPSUpdate = "IPS-Systems.com/Sentry/MobileAppUpdateLocation";
     public static String URL_TRACKING = "IPS-Systems.com/Sentry/MobileAppNewStatus";
+    public static String URL_VALET = "IPS-Systems.com/VPTS/MobileAppRequestCall";
 
     public static String URL_SIGNOUT = "IPS-Systems.com/home/MobileAppSignOut";
 
@@ -24,12 +27,20 @@ public class Constant {
 
     public static final String URL_WEBSITE = "http://www.ips-systems.com/";
 
+    public static final String URL_SITE_INDIVIDUALS = "IPS-Systems.com/Sentry/MobileAppGetSiteIndividuals";
 
+//IPS-Systems.com/Sentry/MobileAppGetSiteIndividuals
 
     public static final String[] gps_interval = {"5", "15", "30", "60", "300", "900", "1800", "3600"};
 
     public static final String[] url_env = {"dev", "qa", "staging", "prod"};
 
+    public static final String[] stopped_threshold = {"1", "5", "10", "15", "30", "60", "120", "180"};
+
+    public static final String SECONDS = "seconds",MINUTES = "minutes",HOUR = "hour";
+
+    public static final String[] dim_delay = {"Never", "30 "+SECONDS, "1 "+MINUTES, "5 "+MINUTES, "15 "+MINUTES, "1 " + HOUR, "2 "+HOUR,"4 "+HOUR,"8 "+HOUR};
+    //1, 5, 10, 15, 30, 60, 120, 180
 
     public static final String ADMIN_PASSWORD = "1127";
 

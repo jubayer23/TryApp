@@ -24,9 +24,10 @@ import com.ips_sentry.appdata.AppController;
 import com.ips_sentry.appdata.SaveManager;
 import com.ips_sentry.dialog.AlertDialogManager;
 import com.ips_sentry.service.MyServiceUpdate;
-import com.ips_sentry.setting.ConnectionDetector;
-import com.ips_sentry.setting.GPSTracker;
+import com.ips_sentry.utils.ConnectionDetector;
+import com.ips_sentry.utils.GPSTracker;
 import com.ips_sentry.utils.Constant;
+import com.ips_sentry.utils.LastLocationOnly;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -60,14 +61,13 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     // Alert Dialog Manager
     AlertDialogManager alert = new AlertDialogManager();
 
-    // GPS Location
-    GPSTracker gps;
 
-    ConnectionDetector cd;
+   private ConnectionDetector cd;
 
     private SaveManager saveManager;
 
-    private com.ips_sentry.AlarmManager.AlarmManager myAlarm;
+
+    private LastLocationOnly lastLocationOnly;
 
     private TextView tv_power_by;
 
@@ -103,7 +103,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         init();
 
 
-        myAlarm = new com.ips_sentry.AlarmManager.AlarmManager(this);
 
 
         //visibleInvisible();
@@ -125,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
         cd = new ConnectionDetector(this);
 
-        gps = new GPSTracker(this);
+        lastLocationOnly = new LastLocationOnly(this);
 
 
         if (!cd.isConnectingToInternet()) {
@@ -135,14 +134,15 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             //stop executing code by return
             return;
         }
-        if (!gps.canGetLocation()) {
-            gps.showSettingsAlert();
+        if (!lastLocationOnly.canGetLocation()) {
+            lastLocationOnly.showSettingsAlert();
 
             return;
         }
 
-        saveManager.setUserLat(String.valueOf(gps.getLatitude()));
-        saveManager.setUserLang(String.valueOf(gps.getLongitude()));
+        saveManager.setUserLat(String.valueOf(lastLocationOnly.getLatitude()));
+        saveManager.setUserLang(String.valueOf(lastLocationOnly.getLongitude()));
+
 
     }
 
@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
 
 
-            gps = new GPSTracker(this);
+            lastLocationOnly = new LastLocationOnly(this);
 
             if (!cd.isConnectingToInternet()) {
                 //Internet Connection is not present
@@ -205,8 +205,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 //stop executing code by return
                 return;
             }
-            if (!gps.canGetLocation()) {
-                gps.showSettingsAlert();
+            if (!lastLocationOnly.canGetLocation()) {
+                lastLocationOnly.showSettingsAlert();
 
                 return;
             }
@@ -218,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             pDialog.setCancelable(false);
             pDialog.show();
 
-            hitUrl(saveManager.getGpsUrlEnv() + Constant.URL_LOGIN);
+            hitUrl(saveManager.getUrlEnv() + Constant.URL_LOGIN);
 
 
             // Adding request to request queue
@@ -289,7 +289,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
                                 saveManager.setIndividualLabel(jsonObject.getBoolean(KEY_SHOWINDIVIDUAL_LABEL));
 
-                                gps.stopUsingGPS();
                                 saveManager.setRecordTime(0);
 
                                 //1800 sec
@@ -300,6 +299,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
                                 Intent intent2 = new Intent(MainActivity.this,
                                         MyServiceUpdate.class);
+                                intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                 startService(intent2);
 
                                 visibleInvisible();

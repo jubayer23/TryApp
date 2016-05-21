@@ -4,13 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -35,7 +29,7 @@ import com.ips_sentry.ips.MainActivity;
 import com.ips_sentry.ips.R;
 import com.ips_sentry.model.SentryIndividual;
 import com.ips_sentry.service.MyServiceUpdate;
-import com.ips_sentry.setting.GPSTracker;
+import com.ips_sentry.utils.GPSTracker;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -137,7 +131,7 @@ public class MapFragment extends Fragment {
                         bearing(0).
                         build();
 
-                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             }
         });
 
@@ -234,7 +228,7 @@ public class MapFragment extends Fragment {
         };
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(getActivity().getPackageName() + MyServiceUpdate.KEY_MARKERUPDATE);
+        filter.addAction(getActivity().getPackageName() + MyServiceUpdate.KEY_ACTION_MARKERUPDATE);
         LocalBroadcastManager.getInstance(this.getActivity()).registerReceiver(receiver, filter);
     }
 
@@ -247,7 +241,7 @@ public class MapFragment extends Fragment {
 
             if (flag_individual_label) {
                 IconGenerator iconFactory = new IconGenerator(getActivity());
-                iconFactory.setColor(Color.BLUE);
+                iconFactory.setColor(Color.WHITE);
                 MarkerOptions markerOptions = new MarkerOptions().
                         icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(sentryIndividuals.get(i).getLabel()))).
                         position(new LatLng(sentryIndividuals.get(i).getLat(), sentryIndividuals.get(i).getLng())).
@@ -286,6 +280,5 @@ public class MapFragment extends Fragment {
         LocalBroadcastManager.getInstance(this.getActivity()).unregisterReceiver(receiver);
         super.onDestroy();
     }
-
 
 }

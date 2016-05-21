@@ -3,14 +3,11 @@ package com.ips_sentry.Adapter;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -136,7 +133,7 @@ public class RouteListAdapter extends BaseAdapter {
 
         //progressBar.setVisibility(View.VISIBLE);
 
-        String url = saveManager.getGpsUrlEnv() + Constant.URL_SELECT_DESELECT_ROUTES;
+        String url = saveManager.getUrlEnv() + Constant.URL_SELECT_DESELECT_ROUTES;
 
         StringRequest req = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>() {

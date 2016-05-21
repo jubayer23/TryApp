@@ -2,6 +2,7 @@ package com.ips_sentry.Adapter;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,9 +77,11 @@ public class PlaceListAdapter extends BaseAdapter {
 
         float[] results = new float[1];
 
+
         if (venue.getLogo() == null || venue.getLogo().isEmpty()) {
             viewHolder.networkImageView.setVisibility(View.GONE);
         } else {
+            viewHolder.networkImageView.setVisibility(View.VISIBLE);
             viewHolder.networkImageView.setImageUrl(venue.getLogo(), imageLoader);
         }
 

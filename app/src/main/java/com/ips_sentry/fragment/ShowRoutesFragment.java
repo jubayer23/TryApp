@@ -31,15 +31,15 @@ import java.util.Map;
 
 public class ShowRoutesFragment extends Fragment {
 
-	ListView listView;
-	RouteListAdapter routeListAdapter;
+	private ListView listView;
+	private RouteListAdapter routeListAdapter;
 
 
-	List<Route> routes;
-	Gson gson;
-	ProgressBar progressBar;
+	private List<Route> routes;
+	private Gson gson;
+	private ProgressBar progressBar;
 
-	SaveManager saveManager;
+	private SaveManager saveManager;
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -87,7 +87,7 @@ public class ShowRoutesFragment extends Fragment {
 
 		progressBar.setVisibility(View.VISIBLE);
 
-		String url = saveManager.getGpsUrlEnv() + Constant.URL_SHOW_ROUTES;
+		String url = saveManager.getUrlEnv() + Constant.URL_SHOW_ROUTES;
 
 		StringRequest req = new StringRequest(Request.Method.POST, url,
 				new Response.Listener<String>() {

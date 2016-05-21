@@ -19,12 +19,15 @@ public class SaveManager {
     private static final String KEY_USER_LAT = "user_lat";
     private static final String KEY_USER_LANG= "user_lng";
     private static final String KEY_GPS_URL= "gps_url";
-    private static final String KEY_GPS_URL_ENV= "url_env";
+    private static final String KEY_URL_ENV = "url_env";
     private static final String KEY_GPS_INTERVAL= "gps_interval";
+    private static final String KEY_STOPPED_THRESHOLD= "stopped_interval";
     private static final String KEY_USER_CURRENT_ACTIVITY= "user_activity";
     private static final String KEY_RECORD_TIME= "record_time";
     private static final String KEY_TRAFFIC_INFO= "showTrafficInfo";
     private static final String KEY_SHOWINDIVIDUAL= "showIndividualLabels";
+    private static final String KEY_DIMDELAY= "dimdelay";
+    private static final String KEY_SELECTED_DIMDELAY= "selected_dimdelay";
 
     private SharedPreferences.Editor editor;
     private Context context;
@@ -39,6 +42,25 @@ public class SaveManager {
     private SharedPreferences getSharedPreferences(final String prefName,
                                                    final int mode) {
         return this.context.getSharedPreferences(prefName, mode);
+    }
+
+    public void setDimDelay(String value) {
+        editor.putString(KEY_DIMDELAY, value);
+        editor.apply();
+    }
+
+    public String getDimDelay() {
+        return mSharedPreferences.getString(KEY_DIMDELAY, Constant.dim_delay[0]);
+    }
+
+
+    public void setSelectedDimDelay(int value) {
+        editor.putInt(KEY_SELECTED_DIMDELAY, value);
+        editor.apply();
+    }
+
+    public int getSelectedDimDelay() {
+        return mSharedPreferences.getInt(KEY_SELECTED_DIMDELAY, -1);
     }
 
     public void setSessionToken(String value) {
@@ -123,14 +145,24 @@ public class SaveManager {
     }
 
 
-    public void setGpsUrlEnv(String value) {
-        editor.putString(KEY_GPS_URL_ENV, value);
+    public void setUrlEnv(String value) {
+        editor.putString(KEY_URL_ENV, value);
         editor.apply();
     }
 
-    public String getGpsUrlEnv() {
-        return mSharedPreferences.getString(KEY_GPS_URL_ENV, Constant.URL_ENV);
+    public String getUrlEnv() {
+        return mSharedPreferences.getString(KEY_URL_ENV, Constant.URL_ENV);
     }
+
+    public void setStoppedThreshold(String value) {
+        editor.putString(KEY_STOPPED_THRESHOLD, value);
+        editor.apply();
+    }
+
+    public String getStoppedThreshold() {
+        return mSharedPreferences.getString(KEY_STOPPED_THRESHOLD,"5");
+    }
+
 
 
     public void setGpsInterval(String value) {

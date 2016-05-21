@@ -1,4 +1,4 @@
-package com.ips_sentry.setting;
+package com.ips_sentry.utils;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

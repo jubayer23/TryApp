@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.BatteryManager;
-import android.util.Log;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -13,12 +12,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.ips_sentry.appdata.AppController;
 import com.ips_sentry.appdata.SaveManager;
-import com.ips_sentry.service.MyServiceUpdate;
-import com.ips_sentry.setting.ConnectionDetector;
+import com.ips_sentry.utils.ConnectionDetector;
 import com.ips_sentry.utils.Constant;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +44,7 @@ public class BatteryLowReceiver extends BroadcastReceiver {
                 level = (rawlevel * 100) / scale;
             }
 
-            hitUrl(saveManager.getGpsUrlEnv() + Constant.URL_BATTERY_DAMAGE , level + "%");
+            hitUrl(saveManager.getUrlEnv() + Constant.URL_BATTERY_DAMAGE , String.valueOf(level));
 
         }
     }

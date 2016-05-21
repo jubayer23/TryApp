@@ -31,7 +31,7 @@ public class AlarmManager {
 
         Intent intent = new Intent(context, MyService.class);
 
-        PendingIntent pendingIntent = PendingIntent.getService(context, REQUEST_CODE, intent,0);
+        PendingIntent pendingIntent = PendingIntent.getService(context, REQUEST_CODE, intent,PendingIntent.FLAG_CANCEL_CURRENT);
         //am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
         //		1000 * 5, pi);
         android.app.AlarmManager alarm = (android.app.AlarmManager) context

@@ -13,22 +13,6 @@
         <ProgressBar style="@style/GenericProgressIndicator" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btnSignIn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:text="Sign In" />
-
-    <TextView
-        android:id="@+id/tvNearByVenues"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/btnSignIn"
-        android:layout_centerHorizontal="true"
-        android:text="Nearby Venues"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@android:color/holo_blue_light" />
 
     <TextView
         android:id="@+id/tvNoVenues"

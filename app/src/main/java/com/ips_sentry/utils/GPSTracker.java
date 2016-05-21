@@ -1,4 +1,4 @@
-package com.ips_sentry.setting;
+package com.ips_sentry.utils;
 
 import android.app.AlertDialog;
 import android.app.Service;
