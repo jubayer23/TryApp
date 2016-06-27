@@ -4,18 +4,43 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/top_tab"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/blue_dark"
-        android:gravity="center_horizontal"
         android:orientation="vertical">
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/img_charge_icon"
+                android:layout_width="60dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:src="@drawable/icon_battery_uncharge_green" />
+
+            <TextView
+                android:id="@+id/tv_batterylevel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="25%"
+                android:layout_gravity="center"
+                android:textColor="@color/white"
+                android:textSize="15sp" />
+        </LinearLayout>
+
 
         <TextView
             android:id="@+id/user_activity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
             android:text="Status : Idle"
             android:textColor="@color/white"
             android:textSize="30sp" />
@@ -24,11 +49,14 @@
             android:id="@+id/digitalClock1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@id/user_activity"
+            android:layout_centerHorizontal="true"
             android:text="DigitalClock"
             android:textColor="@color/white"
             android:textSize="70sp" />
 
-    </LinearLayout>
+
+    </RelativeLayout>
 
 
     <FrameLayout
@@ -37,7 +65,7 @@
         android:layout_height="match_parent"
         android:layout_below="@+id/top_tab"
         android:layout_marginBottom="60dp"
-        tools:context=".MainActivity"
+        tools:context="com.ips_sentry.MainActivity"
         tools:ignore="MergeRootFrame" />
 
 
@@ -46,6 +74,7 @@
         android:layout_width="match_parent"
         android:layout_height="65dp"
         android:layout_alignParentBottom="true"
+        android:background="@color/gray_dark"
         android:orientation="horizontal">
 
         <LinearLayout
@@ -57,16 +86,13 @@
             android:orientation="vertical">
 
             <ImageView
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:src="@drawable/show_routes" />
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:src="@drawable/icon_routes_2" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Routes"
-                android:textStyle="bold" />
+
         </LinearLayout>
+
         <View
             android:layout_width="1dp"
             android:layout_height="match_parent"
@@ -77,19 +103,16 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="@color/gray_dark"
             android:gravity="center"
             android:orientation="vertical">
 
             <ImageView
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:src="@drawable/map_icon" />
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:src="@drawable/icon_map_2" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Map"
-                android:textStyle="bold" />
+
         </LinearLayout>
 
         <View
@@ -102,16 +125,80 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@color/blue_light"
+            android:background="@color/gray_light"
             android:gravity="center"
             android:orientation="vertical">
 
 
-            <TextView
+            <ImageView
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:src="@drawable/icon_valet_2" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/aluminum" />
+
+        <RelativeLayout
+            android:id="@+id/btn_message"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/gray_dark"
+            android:clipChildren="true">
+
+            <ImageView
+                android:id="@+id/icon_message"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/icon_message_2" />
+
+            <LinearLayout
+
+                android:id="@+id/ll_chat_noti"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Valet"
-                android:textStyle="bold" />
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginRight="2dp"
+                android:background="@drawable/circle_background_history"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/tv_num_of_unseen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="1"
+                    android:textColor="@android:color/white" />
+
+            </LinearLayout>
+
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/aluminum" />
+
+        <LinearLayout
+            android:id="@+id/btn_admin"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/gray_dark"
+            android:gravity="center"
+            android:orientation="vertical">
+
+
+            <ImageView
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:src="@drawable/icon_admin_2" />
         </LinearLayout>
 
 

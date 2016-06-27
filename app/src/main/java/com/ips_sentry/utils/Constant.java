@@ -1,8 +1,12 @@
 package com.ips_sentry.utils;
 
+import com.ips_sentry.model.Message;
+
+import java.util.ArrayList;
+
 public class Constant {
 
-    public static final String APP_VERSION = "1.21";
+    public static final String APP_VERSION = "1.23";
 
     public static final String URL_PREFIX = "http://";
 
@@ -28,6 +32,10 @@ public class Constant {
     public static final String URL_WEBSITE = "http://www.ips-systems.com/";
 
     public static final String URL_SITE_INDIVIDUALS = "IPS-Systems.com/Sentry/MobileAppGetSiteIndividuals";
+
+    public static final String URL_UserMessage = "ips-systems.com/Sentry/GetMessages";
+
+    public static final String URL_ARRIVAL_NOTIFICATIONS = "ips-systems.com/Sentry/ArrivalNotification";
 
 //IPS-Systems.com/Sentry/MobileAppGetSiteIndividuals
 
@@ -56,6 +64,7 @@ public class Constant {
     public static String USER_ACTIVITY_IDLE = "Idle";
     public static String USER_ACTIVITY_MOVING = "Moving";
     public static String USER_ACTIVITY_STOPPED = "Stopped";
+    public static boolean isIncomingMessageDuringOnResume = false;
 
 
     public static String getUserActivity(int type) {
@@ -66,5 +75,19 @@ public class Constant {
         }
     }
 
+
+    public static boolean isMessageLayoutResume = false;
+
+    public static ArrayList<Message> messageList ;
+
+
+    public static void makeMessageSeen(){
+        for (int i =0;i<messageList.size();i++){
+            Message message = messageList.get(i);
+            message.setSeen(true);
+            messageList.remove(i);
+            messageList.add(i,message);
+        }
+    }
 
 }

@@ -8,7 +8,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3">
+        android:layout_weight="2">
 
         <ListView
             android:id="@+id/list_2"
@@ -32,23 +32,23 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="7"
+        android:layout_weight="8"
         android:layout_marginBottom="10dp"
         android:orientation="vertical"
-        android:weightSum="5">
+        android:weightSum="6">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <android.support.design.widget.TextInputLayout
                 android:id="@+id/ed_field"
                 android:layout_width="0dp"
-                android:layout_height="70dp"
-                android:layout_marginTop="-10dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="-25dp"
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"
                 android:layout_weight="2">
@@ -60,8 +60,7 @@
                     android:background="@drawable/rounded_edittext"
                     android:digits="1234567890"
                     android:gravity="center"
-                    android:textSize="30sp"
-                    android:scaleY="1.0"
+                    android:textSize="45sp"
                     android:inputType="number" />
             </android.support.design.widget.TextInputLayout>
 

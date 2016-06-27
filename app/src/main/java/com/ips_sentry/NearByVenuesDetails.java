@@ -1,4 +1,4 @@
-package com.ips_sentry.ips;
+package com.ips_sentry;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -22,6 +22,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 import com.ips_sentry.appdata.AppController;
 import com.ips_sentry.appdata.SaveManager;
+import com.ips_sentry.ips.R;
 import com.ips_sentry.map.BaseMapActivity;
 import com.ips_sentry.model.SentryIndividual;
 import com.ips_sentry.utils.GPSTracker;

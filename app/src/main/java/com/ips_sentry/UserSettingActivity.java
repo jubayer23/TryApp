@@ -1,4 +1,4 @@
-package com.ips_sentry.ips;
+package com.ips_sentry;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ips_sentry.appdata.SaveManager;
+import com.ips_sentry.ips.R;
 import com.ips_sentry.utils.Constant;
 
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public class UserSettingActivity extends AppCompatActivity implements View.OnCli
 
                 item = item.trim();
 
-                saveManager.setGpsInterval(item);
+                saveManager.setGpsInterval(Integer.parseInt(item));
             }
 
             @Override
@@ -187,7 +188,7 @@ public class UserSettingActivity extends AppCompatActivity implements View.OnCli
         updateGpsUrlTextView();
 
 
-        list_gps_interval.add(saveManager.getGpsInterval());
+        list_gps_interval.add(String.valueOf(saveManager.getGpsInterval()));
 
         for (int i = 0; i < Constant.gps_interval.length; i++) {
 

@@ -94,6 +94,8 @@ public class ValetFragment extends Fragment implements View.OnClickListener {
 
             listView.setAdapter(routeSelectedListAdapter);
 
+            RouteSelectedListAdapter.selectedId = "";
+
             sendRequestToServer();
 
         } else {

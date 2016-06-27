@@ -24,7 +24,7 @@ import com.ips_sentry.appdata.AppController;
 import com.ips_sentry.appdata.SaveManager;
 import com.ips_sentry.utils.ConnectionDetector;
 import com.ips_sentry.utils.GPSTracker;
-import com.ips_sentry.ips.MainActivity;
+import com.ips_sentry.MainActivity;
 import com.ips_sentry.ips.R;
 import com.ips_sentry.utils.Constant;
 

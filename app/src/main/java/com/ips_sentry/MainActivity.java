@@ -1,4 +1,4 @@
-package com.ips_sentry.ips;
+package com.ips_sentry;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -7,9 +7,12 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -23,9 +26,9 @@ import com.android.volley.toolbox.StringRequest;
 import com.ips_sentry.appdata.AppController;
 import com.ips_sentry.appdata.SaveManager;
 import com.ips_sentry.dialog.AlertDialogManager;
+import com.ips_sentry.ips.R;
 import com.ips_sentry.service.MyServiceUpdate;
 import com.ips_sentry.utils.ConnectionDetector;
-import com.ips_sentry.utils.GPSTracker;
 import com.ips_sentry.utils.Constant;
 import com.ips_sentry.utils.LastLocationOnly;
 
@@ -37,21 +40,23 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements OnClickListener {
 
+
     //in master change
 
-    EditText et_username, et_password;
+    private EditText et_username, et_password;
 
-    Button btn_submit, btn_logout, map_show;
+    private Button btn_submit, btn_logout, map_show;
 
-    TextView tvNearByVenues;
+    private TextView tvNearByVenues;
 
-    String username, password;
+    private String username, password;
 
     private static String URL;
 
     private static String KEY_STATUS = "status";
     private static String KEY_SESSION_TOKEN = "sessionId";
     public static String KEY_TRAFFIC_INFO = "showTrafficInfo";
+    private static final String KEY_GPS_INTERVAL = "gpsIntervals";
     public static String KEY_SHOWINDIVIDUAL_LABEL = "showIndividualLabels";
 
     // Progress Dialog
@@ -62,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     AlertDialogManager alert = new AlertDialogManager();
 
 
-   private ConnectionDetector cd;
+    private ConnectionDetector cd;
 
     private SaveManager saveManager;
 
@@ -96,13 +101,23 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
         //requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-              WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.activity_main);
 
         init();
 
+        et_password.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if ((event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER))
+                        || (actionId == EditorInfo.IME_ACTION_DONE)) {
+                    //Log.d("DEBUG","Enter pressed");
 
+                    processSubmitButton();
+                }
+                return false;
+            }
+        });
 
 
         //visibleInvisible();
@@ -183,45 +198,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         int id = v.getId();
 
         if (id == R.id.submit) {
-            username = et_username.getText().toString();
-            password = et_password.getText().toString();
 
-            if (!validate(username, password)) {
-                //onLoginFailed();
-                return;
-            }
-
-
-            updateUserNameAndPassWord();
-
-
-
-            lastLocationOnly = new LastLocationOnly(this);
-
-            if (!cd.isConnectingToInternet()) {
-                //Internet Connection is not present
-                alert.showAlertDialog(MainActivity.this, "Internet Connection Error",
-                        "Please connect to working Internet connection", false);
-                //stop executing code by return
-                return;
-            }
-            if (!lastLocationOnly.canGetLocation()) {
-                lastLocationOnly.showSettingsAlert();
-
-                return;
-            }
-
-
-            pDialog = new ProgressDialog(MainActivity.this);
-            pDialog.setMessage("Loading.... Please wait...");
-            pDialog.setIndeterminate(false);
-            pDialog.setCancelable(false);
-            pDialog.show();
-
-            hitUrl(saveManager.getUrlEnv() + Constant.URL_LOGIN);
-
-
-            // Adding request to request queue
+            processSubmitButton();
 
 
         }
@@ -253,11 +231,42 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         }
     }
 
-    private void updateUserNameAndPassWord() {
-        saveManager.setUserName(username);
-        saveManager.setUserPassword(password);
-    }
+    private void processSubmitButton() {
 
+        username = et_username.getText().toString();
+        password = et_password.getText().toString();
+        lastLocationOnly = new LastLocationOnly(this);
+
+        if (!validate(username, password)) {
+            //onLoginFailed();
+            return;
+        }
+        if (!cd.isConnectingToInternet()) {
+            //Internet Connection is not present
+            alert.showAlertDialog(MainActivity.this, "Internet Connection Error",
+                    "Please connect to working Internet connection", false);
+            //stop executing code by return
+            return;
+        }
+        if (!lastLocationOnly.canGetLocation()) {
+            lastLocationOnly.showSettingsAlert();
+
+            return;
+        }
+
+
+        pDialog = new ProgressDialog(MainActivity.this);
+        pDialog.setMessage("Loading.... Please wait...");
+        pDialog.setIndeterminate(false);
+        pDialog.setCancelable(false);
+        pDialog.show();
+
+        hitUrl(saveManager.getUrlEnv() + Constant.URL_LOGIN);
+
+
+        // Adding request to request queue
+
+    }
 
     private void hitUrl(String url) {
         // TODO Auto-generated method stub
@@ -269,17 +278,20 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                     public void onResponse(String response) {
                         pDialog.dismiss();
 
+                        // Log.d("DEBUG",response);
+
                         try {
                             JSONObject jsonObject = new JSONObject(response);
                             boolean status = jsonObject.getBoolean(KEY_STATUS);
                             String session_id;
                             if (status) {
 
-
                                 session_id = jsonObject.getString(KEY_SESSION_TOKEN);
 
                                 //Log.d("DEBUG",session_id);
+                                saveManager.setUserName(username);
 
+                                saveManager.setUserPassword(password);
 
                                 saveManager.setSignInOut(true);
 
@@ -288,6 +300,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                                 saveManager.setTrafficInfo(jsonObject.getBoolean(KEY_TRAFFIC_INFO));
 
                                 saveManager.setIndividualLabel(jsonObject.getBoolean(KEY_SHOWINDIVIDUAL_LABEL));
+
+                                saveManager.setGpsInterval(jsonObject.getInt(KEY_GPS_INTERVAL));
+                                saveManager.setPermanentGpsInterval(jsonObject.getInt(KEY_GPS_INTERVAL));
 
                                 saveManager.setRecordTime(0);
 
@@ -337,9 +352,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         // TODO Auto-generated method stub
         AppController.getInstance().addToRequestQueue(req);
     }
-
-
-
 
 
     private void visibleInvisible() {

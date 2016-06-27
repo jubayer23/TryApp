@@ -1,4 +1,4 @@
-package com.ips_sentry.ips;
+package com.ips_sentry;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -20,6 +20,7 @@ import com.ips_sentry.Adapter.PlaceListAdapter;
 import com.ips_sentry.appdata.AppController;
 import com.ips_sentry.appdata.SaveManager;
 import com.ips_sentry.dialog.AlertDialogManager;
+import com.ips_sentry.ips.R;
 import com.ips_sentry.model.Venue;
 import com.ips_sentry.utils.GPSTracker;
 import com.ips_sentry.utils.Constant;

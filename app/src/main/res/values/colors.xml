@@ -34,8 +34,9 @@
     <color name="green_light">#67efb5</color>
 
 
-
-    <color name="dark">#8E8787</color>
+    <color name="gray_dark">#282727</color>
+    <color name="gray_light">#8E8787</color>
+    <color name="gray_light_extreme">#CCCCCC</color>
 
 
 

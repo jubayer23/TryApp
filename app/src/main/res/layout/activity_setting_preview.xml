@@ -20,6 +20,27 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="5"
                 android:textColor="@color/black"
+                android:text="UserName: " />
+
+            <TextView
+                android:id="@+id/tv_username"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="5"
+                android:text="null" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="5"
+                android:textColor="@color/black"
                 android:text="Server Environmnet: " />
 
             <TextView
@@ -91,6 +112,27 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="5"
                 android:text="Information Processing Service, LLC" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="5"
+                android:textColor="@color/black"
+                android:text="Battery Level: " />
+
+            <TextView
+                android:id="@+id/tv_batterylevel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="5"
+                android:text="null" />
 
         </LinearLayout>
 

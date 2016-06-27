@@ -3,7 +3,6 @@ package com.ips_sentry.userview;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -11,7 +10,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.ips_sentry.ips.R;
-import com.ips_sentry.ips.WebViewActivity;
+import com.ips_sentry.WebViewActivity;
 
 import java.util.Calendar;
 

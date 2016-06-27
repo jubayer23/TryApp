@@ -25,7 +25,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 import com.google.maps.android.ui.IconGenerator;
-import com.ips_sentry.ips.MainActivity;
+import com.ips_sentry.MainActivity;
 import com.ips_sentry.ips.R;
 import com.ips_sentry.model.SentryIndividual;
 import com.ips_sentry.service.MyServiceUpdate;

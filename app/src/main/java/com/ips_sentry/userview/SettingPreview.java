@@ -8,12 +8,13 @@ import android.widget.TextView;
 import com.ips_sentry.appdata.SaveManager;
 import com.ips_sentry.ips.R;
 import com.ips_sentry.utils.Constant;
+import com.ips_sentry.utils.DeviceInfoUtils;
 
 /**
  * Created by comsol on 02-Feb-16.
  */
 public class SettingPreview extends AppCompatActivity {
-    TextView tv_server_env,tv_gps_interval,tv_stopped_threshold,dim_delay;
+    TextView tv_server_env,tv_gps_interval,tv_stopped_threshold,dim_delay,tv_username,tv_batterylevel;
     SaveManager saveManager;
 
     @Override
@@ -27,6 +28,8 @@ public class SettingPreview extends AppCompatActivity {
         tv_gps_interval= (TextView)findViewById(R.id.tv_gps_interval);
         tv_stopped_threshold= (TextView)findViewById(R.id.tv_stopped_threshold);
         dim_delay= (TextView)findViewById(R.id.tv_dim_delay);
+        tv_username= (TextView)findViewById(R.id.tv_username);
+        tv_batterylevel= (TextView)findViewById(R.id.tv_batterylevel);
 
         String s = saveManager.getUrlEnv().substring(Constant.URL_PREFIX.length(),saveManager.getUrlEnv().length()-1);
 
@@ -35,6 +38,9 @@ public class SettingPreview extends AppCompatActivity {
         tv_gps_interval.setText(saveManager.getGpsInterval() + " sec");
         tv_stopped_threshold.setText(saveManager.getStoppedThreshold() + " mins");
         dim_delay.setText(saveManager.getDimDelay());
+
+        tv_username.setText(saveManager.getUserName());
+        tv_batterylevel.setText(DeviceInfoUtils.getBatteryLevel(this) + "%");
     }
 
 

@@ -1,4 +1,4 @@
-package com.ips_sentry.ips;
+package com.ips_sentry;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +9,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 
+import com.ips_sentry.ips.R;
 import com.ips_sentry.utils.Constant;
 
 import java.util.Timer;

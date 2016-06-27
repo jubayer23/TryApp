@@ -1,9 +1,10 @@
-package com.ips_sentry.ips;
+package com.ips_sentry;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
@@ -12,12 +13,15 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -26,13 +30,17 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.ips_sentry.appdata.AppController;
 import com.ips_sentry.appdata.SaveManager;
+import com.ips_sentry.fragment.AdminFragment;
 import com.ips_sentry.fragment.MapFragment;
+import com.ips_sentry.fragment.MessagesFragment;
 import com.ips_sentry.fragment.ShowRoutesFragment;
 import com.ips_sentry.fragment.ValetFragment;
+import com.ips_sentry.ips.R;
 import com.ips_sentry.service.MyServiceUpdate;
 import com.ips_sentry.userview.AboutPage;
 import com.ips_sentry.userview.SettingPreview;
 import com.ips_sentry.utils.Constant;
+import com.ips_sentry.utils.DeviceInfoUtils;
 import com.ips_sentry.utils.DummyActivity;
 
 import java.util.HashMap;
@@ -43,27 +51,44 @@ import java.util.Map;
  */
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
 
-    RelativeLayout btn_hidemenu;
+    public static final String KEY_BROADCAST_FOR_MESSAGE_SEEN = "message_seen_by_click";
+    private RelativeLayout btn_hidemenu;
 
-    LinearLayout btn_showmap, btn_showroutes, btn_showvalet;
+    private LinearLayout btn_showmap, btn_showroutes, btn_showvalet, btn_admin;
+    private RelativeLayout btn_message;
 
-    LinearLayout hide_menu;
-    FragmentTransaction transaction;
-    Fragment fragment_1, fragment_2, fragment_3;
-    FragmentManager fragmentManager;
+    private LinearLayout hide_menu;
+    private FragmentTransaction transaction;
+    private Fragment fragment_1, fragment_2, fragment_3, fragment_4, fragment_5;
+    private FragmentManager fragmentManager;
 
-    RelativeLayout dummy_click_listener;
+    private RelativeLayout dummy_click_listener;
 
-    TextView tv_help, tv_setting_preview, tv_logout;
+    private TextView tv_help, tv_setting_preview, tv_logout;
 
-    TextView tv_user_activity;
+    private TextView tv_user_activity;
 
-    SaveManager saveManager;
+    private SaveManager saveManager;
+
+    private ImageView charge_icon;
 
     private static boolean screenDimOnFlag = false;
 
 
     private BroadcastReceiver receiverForSetUserActivity, receiverScreenDimTurnOn;
+    private BroadcastReceiver receiverForMessage, receiverBatteryStateChanged;
+
+
+    private LinearLayout ll_chat_noti;
+    private TextView tv_num_of_unseen;
+
+
+    private static final int TAB_COLOR_UNSELECTED = R.color.gray_dark;
+    private static final int TAB_COLOR_SELECTED = R.color.gray_light;
+
+    private TextView tv_batterylevel;
+
+   // private static boolean isBatteryPlugedIn = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -85,6 +110,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         fragment_1.setArguments(bundle);
         fragment_2 = new ShowRoutesFragment();
         fragment_3 = new ValetFragment();
+        fragment_4 = new MessagesFragment();
+        fragment_5 = new AdminFragment();
 
         btnToggleColor("show_routes");
         fragmentManager = getSupportFragmentManager();
@@ -106,6 +133,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         btn_showroutes.setOnClickListener(this);
         btn_showvalet = (LinearLayout) findViewById(R.id.btn_valet);
         btn_showvalet.setOnClickListener(this);
+        btn_message = (RelativeLayout) findViewById(R.id.btn_message);
+        btn_message.setOnClickListener(this);
+        btn_admin = (LinearLayout) findViewById(R.id.btn_admin);
+        btn_admin.setOnClickListener(this);
 
         btn_hidemenu = (RelativeLayout) findViewById(R.id.btn_showhidemenu);
         btn_hidemenu.setOnClickListener(this);
@@ -129,6 +160,21 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         tv_logout.setOnClickListener(this);
 
         tv_user_activity = (TextView) findViewById(R.id.user_activity);
+
+        charge_icon = (ImageView) findViewById(R.id.img_charge_icon);
+        ll_chat_noti = (LinearLayout) findViewById(R.id.ll_chat_noti);
+        ll_chat_noti.setVisibility(View.GONE);
+        tv_num_of_unseen = (TextView) findViewById(R.id.tv_num_of_unseen);
+        tv_batterylevel = (TextView) findViewById(R.id.tv_batterylevel);
+
+
+       // if (DeviceInfoUtils.isPlugged(this)) {
+        //    charge_icon.setImageResource(R.drawable.charge_icon);
+        //} else {
+         //   charge_icon.setImageResource(0);
+       // }
+
+        //changeBatteryIcon(DeviceInfoUtils.getBatteryLevel(this));
 
     }
 
@@ -164,8 +210,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     lp.screenBrightness = 0.0f;// 100 / 100.0f;
                     getWindow().setAttributes(lp);
 
-                   // Intent globalService = new Intent(HomeActivity.this, GlobalTouchService.class);
-                   // startService(globalService);
+                    // Intent globalService = new Intent(HomeActivity.this, GlobalTouchService.class);
+                    // startService(globalService);
 
                 } else {
 
@@ -196,8 +242,80 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         IntentFilter filter_2 = new IntentFilter();
         filter_2.addAction(getPackageName() + MyServiceUpdate.KEY_BROADCAST_FOR_SCREEN_DIM);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiverScreenDimTurnOn, filter_2);
+
+
+        receiverForMessage = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (saveManager.getNumOfUnseenMessage() > 0) {
+
+                    ll_chat_noti.setVisibility(View.VISIBLE);
+                    tv_num_of_unseen.setText(String.valueOf(saveManager.getNumOfUnseenMessage()));
+
+                } else {
+                    ll_chat_noti.setVisibility(View.GONE);
+                    //tv_num_of_unseen.setText(String.valueOf(saveManager.getNumOfUnseenMessage()));
+                }
+            }
+        };
+
+        IntentFilter filter_4 = new IntentFilter();
+        filter_4.addAction(getPackageName() + MyServiceUpdate.KEY_BROADCAST_FOR_MESSAGE);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiverForMessage, filter_4);
+
+
+        receiverBatteryStateChanged = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                String action = intent.getAction();
+
+                if (action.equals(Intent.ACTION_BATTERY_CHANGED)) {
+
+
+                    //Toast.makeText(HomeActivity.this,"called",Toast.LENGTH_SHORT).show();
+
+                    int plugged=
+                            intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+
+                    if (plugged == BatteryManager.BATTERY_PLUGGED_AC
+                            || plugged == BatteryManager.BATTERY_PLUGGED_USB) {
+                        charge_icon.setImageResource(R.drawable.charge_icon);
+                    }else{
+                        charge_icon.setImageResource(0);
+                    }
+                    int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+                    int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+                    int batteryPct = 100;
+                    if (level != -1 && scale != -1) {
+                        batteryPct = (int) ((level / (float) scale) * 100f);
+                        changeBatteryIcon(batteryPct);
+                    }
+                }
+
+            }
+        };
+
+        IntentFilter filter_5 = new IntentFilter();
+        filter_5.addAction(Intent.ACTION_BATTERY_CHANGED);
+        registerReceiver(receiverBatteryStateChanged, filter_5);
     }
 
+    private void changeBatteryIcon(int batteryPct) {
+
+        tv_batterylevel.setText(batteryPct + "%");
+
+
+        if (batteryPct < 9) {
+             charge_icon.setBackgroundResource(R.drawable.icon_battery_uncharge_red);
+        } else if (batteryPct >= 10 && batteryPct <= 50) {
+              charge_icon.setBackgroundResource(R.drawable.icon_battery_uncharge_yellow);
+        } else {
+           charge_icon.setBackgroundResource(R.drawable.icon_battery_uncharge_green);
+        }
+
+
+    }
 
     @Override
     public void onBackPressed() {
@@ -226,6 +344,13 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             if (fragment_3.isAdded()) {
                 transaction.hide(fragment_3);
             }
+            if (fragment_4.isAdded()) {
+                transaction.hide(fragment_4);
+                fragment_4.onPause();
+            }
+            if (fragment_5.isAdded()) {
+                transaction.hide(fragment_5);
+            }
             // Hide fragment C
             // Commit changes
             transaction.commit();
@@ -249,6 +374,13 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             }
             if (fragment_3.isAdded()) {
                 transaction.hide(fragment_3);
+            }
+            if (fragment_4.isAdded()) {
+                transaction.hide(fragment_4);
+                fragment_4.onPause();
+            }
+            if (fragment_5.isAdded()) {
+                transaction.hide(fragment_5);
             }
             // Hide fragment C
             // Commit changes
@@ -274,6 +406,78 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             }
             if (fragment_2.isAdded()) {
                 transaction.hide(fragment_2);
+            }
+            if (fragment_4.isAdded()) {
+                transaction.hide(fragment_4);
+                fragment_4.onPause();
+            }
+            if (fragment_5.isAdded()) {
+                transaction.hide(fragment_5);
+            }
+            // Hide fragment C
+            // Commit changes
+            transaction.commit();
+
+
+        }
+        if (id == R.id.btn_message) {
+            btnToggleColor("show_message");
+
+            transaction = getSupportFragmentManager()
+                    .beginTransaction();
+
+            if (fragment_4.isAdded()) { // if the fragment is already in container
+                transaction.show(fragment_4);
+                fragment_4.onResume();
+                ll_chat_noti.setVisibility(View.GONE);
+            } else { // fragment needs to be added to frame container
+                transaction.add(R.id.container, fragment_4, "fourth");
+                ll_chat_noti.setVisibility(View.GONE);
+            }
+            // Hide fragment B
+            if (fragment_1.isAdded()) {
+                transaction.hide(fragment_1);
+            }
+            if (fragment_2.isAdded()) {
+                transaction.hide(fragment_2);
+            }
+            if (fragment_3.isAdded()) {
+                transaction.hide(fragment_3);
+            }
+            if (fragment_5.isAdded()) {
+                transaction.hide(fragment_5);
+            }
+            // Hide fragment C
+            // Commit changes
+            transaction.commit();
+
+
+        }
+        if (id == R.id.btn_admin) {
+            btnToggleColor("show_admin");
+
+            transaction = getSupportFragmentManager()
+                    .beginTransaction();
+
+            if (fragment_5.isAdded()) { // if the fragment is already in container
+                transaction.show(fragment_5);
+                fragment_5.onResume();
+            } else { // fragment needs to be added to frame container
+                transaction.add(R.id.container, fragment_5, "fifth");
+            }
+            // Hide fragment B
+            if (fragment_1.isAdded()) {
+                transaction.hide(fragment_1);
+            }
+            if (fragment_2.isAdded()) {
+                transaction.hide(fragment_2);
+            }
+            if (fragment_3.isAdded()) {
+                transaction.hide(fragment_3);
+            }
+            if (fragment_4.isAdded()) {
+                transaction.hide(fragment_4);
+                fragment_4.onPause();
             }
             // Hide fragment C
             // Commit changes
@@ -375,17 +579,35 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     public void btnToggleColor(String btn_name) {
         if (btn_name.equalsIgnoreCase("map")) {
-            btn_showmap.setBackgroundColor(getResources().getColor(R.color.blue_light));
-            btn_showroutes.setBackgroundColor(getResources().getColor(R.color.white));
-            btn_showvalet.setBackgroundColor(getResources().getColor(R.color.white));
+            btn_showmap.setBackgroundColor(getResources().getColor(TAB_COLOR_SELECTED));
+            btn_showroutes.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_showvalet.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_message.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_admin.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
         } else if (btn_name.equalsIgnoreCase("show_routes")) {
-            btn_showmap.setBackgroundColor(getResources().getColor(R.color.white));
-            btn_showroutes.setBackgroundColor(getResources().getColor(R.color.blue_light));
-            btn_showvalet.setBackgroundColor(getResources().getColor(R.color.white));
+            btn_showmap.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_showroutes.setBackgroundColor(getResources().getColor(TAB_COLOR_SELECTED));
+            btn_showvalet.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_message.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_admin.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+        } else if (btn_name.equalsIgnoreCase("show_valet")) {
+            btn_showmap.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_showroutes.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_showvalet.setBackgroundColor(getResources().getColor(TAB_COLOR_SELECTED));
+            btn_message.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_admin.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+        } else if (btn_name.equalsIgnoreCase("show_message")) {
+            btn_showmap.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_showroutes.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_showvalet.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_message.setBackgroundColor(getResources().getColor(TAB_COLOR_SELECTED));
+            btn_admin.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
         } else {
-            btn_showmap.setBackgroundColor(getResources().getColor(R.color.white));
-            btn_showroutes.setBackgroundColor(getResources().getColor(R.color.white));
-            btn_showvalet.setBackgroundColor(getResources().getColor(R.color.blue_light));
+            btn_showmap.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_showroutes.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_showvalet.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_message.setBackgroundColor(getResources().getColor(TAB_COLOR_UNSELECTED));
+            btn_admin.setBackgroundColor(getResources().getColor(TAB_COLOR_SELECTED));
         }
     }
 
@@ -393,9 +615,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     protected void onDestroy() {
         super.onDestroy();
         //Intent globalService = new Intent(HomeActivity.this, GlobalTouchService.class);
-       // stopService(globalService);
+        // stopService(globalService);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverForSetUserActivity);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverScreenDimTurnOn);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverForMessage);
+        unregisterReceiver(receiverBatteryStateChanged);
     }
 
 
@@ -425,6 +649,15 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         MyServiceUpdate.lastUpdateForScreenOff = 0;
+
+
+        if (Constant.isMessageLayoutResume && Constant.isIncomingMessageDuringOnResume) {
+            saveManager.setNumOfUnseenMessage(0);
+            ll_chat_noti.setVisibility(View.GONE);
+            Constant.makeMessageSeen();
+            Intent i = new Intent(getPackageName() + KEY_BROADCAST_FOR_MESSAGE_SEEN);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(i);
+        }
 
         return super.dispatchTouchEvent(event);
 

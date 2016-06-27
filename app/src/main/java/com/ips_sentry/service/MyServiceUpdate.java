@@ -34,6 +34,7 @@ import com.ips_sentry.appdata.SaveManager;
 import com.ips_sentry.utils.ConnectionDetector;
 import com.ips_sentry.utils.Constant;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -46,6 +47,10 @@ import java.util.Map;
 public class MyServiceUpdate extends Service implements SensorEventListener {
     public static final String KEY_BROADCAST_FOR_SCREEN_DIM = "screen_dem";
     public static final String KEY_SCREEN_DIM_ON_OFF = "screen_onoroff";
+
+    public static final String KEY_BROADCAST_FOR_MESSAGE = "intent_message";
+    public static final String KEY_MESSAGE = "key_message";
+
 
     //Calendar cur_cal = Calendar.getInstance();
 
@@ -63,7 +68,6 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
 
     public Location previousBestLocation = null, previousBestLocation2 = null;
 
-    private static int gps_interval;
 
     private Context _context;
 
@@ -80,7 +84,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
 
     private SensorManager senSensorManager;
     private Sensor senAccelerometer;
-    private static long lastUpdate = 0, lastUpdateGps = 0, lastUpdateUserCheckIn = 0;
+    private static long lastUpdate = 0, lastUpdateGps = 0, lastUpdateUserCheckIn = 0, lastUpdateForGpsInterval = 0;
     public static long lastUpdateForScreenOff = 0;
     //private static long lastUpdate_forGps = 0;
     float last_x = 0, last_y = 0, last_z = 0;
@@ -103,6 +107,12 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
     private static int counter_idle = 0, counter_moving = 0, counter_gps_moving = 0;
 
     private boolean gps_moving = false;
+
+    private Thread mThread;
+
+
+    private static int[] gps_moving_circle = {0, 0, 0, 0, 0, 0, 0};
+    private static int gps_moving_circle_counter = 0;
 
     @Override
     public void onCreate() {
@@ -147,15 +157,15 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
 
         //Figure out if we have a location somewhere that we can use as a current best location
         if (gpsProvider != null) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, listener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
         }
 
         if (networkProvider != null) {
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, listener);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, listener);
         }
 
         if (passiveProvider != null) {
-            locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 1000, 0, listener);
+            locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, listener);
         }
 
 
@@ -189,10 +199,12 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
         };
 
 
-        new Thread(new Runnable() {
+        mThread = new Thread(new Runnable() {
+            boolean abort = false;
+
             public void run() {
                 // TODO Auto-generated method stub
-                while (true) {
+                while (true && !abort) {
 
 
                     try {
@@ -200,6 +212,8 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                         if (saveManager == null) {
                             saveManager = new SaveManager(_context);
                         }
+
+                        final long curTime = System.currentTimeMillis();
 
                         String session_id = saveManager.getSessionToken();
 
@@ -217,41 +231,49 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                         // gps = new GPSTracker(getApplicationContext());
 
 
-                        if (!session_id.equals("0")) {
+                        if (!session_id.equals("0") && cd.isConnectingToInternet()) {
                             //Log.d("DEBUG", "user enable");
-                            if (cd.isConnectingToInternet()) {
-                                //Log.d("DEBUG", "user connextion ok");
-                                if (isGPSEnabled || isNetworkEnabled) {
 
-                                    //Log.d("DEBUG", "user gps ok");
+                            //Log.d("DEBUG", "user connextion ok");
+                            if ((isGPSEnabled || isNetworkEnabled) &&
+                                    ((curTime - lastUpdateForGpsInterval) >= saveManager.getGpsInterval() * 1000)) {
 
-                                    String user_lat = saveManager.getUserLat();
-                                    String user_lang = saveManager.getUserLang();
+                              //  Log.d("DEBUG", "user gps ok");
+                                lastUpdateForGpsInterval = curTime;
+
+                                String user_lat = saveManager.getUserLat();
+                                String user_lang = saveManager.getUserLang();
 
 
-                                    hitUrl(saveManager.getGpsUrl(), session_id, user_lat, user_lang, saveManager.getUserCurrentActivity(), time_string);
-                                }
+                                hitUrl(saveManager.getGpsUrl(), session_id, user_lat, user_lang, saveManager.getUserCurrentActivity(), time_string);
+
+
                             }
+
+                            //HIT URL for message
+                            hitUrlForMessage(saveManager.getUrlEnv() + Constant.URL_UserMessage, session_id);
+
+
+                            //HIT URL user check in
+                            if ((curTime - lastUpdateUserCheckIn) >= 30000) {
+                                //long diffTime = (curTime - lastUpdate);
+                                //diffTime = diffTime / 1000;
+                                // Log.d("DEBUG","Yes");
+                                lastUpdateUserCheckIn = curTime;
+                                hitUrlForUserChekIn(saveManager.getUrlEnv() + Constant.URL_UerCheckIn, session_id, Constant.APP_VERSION);
+                            }
+
+
                         }
 
                         // hitUrl("http://dev.ips-systems.com/Sentry/MobileAppUpdateLocation?sessionId=2ifkpgbzklmkygnhmpixcx24&lat=24.912785&lng=91.9535703");
 
 
-                        final long curTime = System.currentTimeMillis();
-
-
-                        if ((curTime - lastUpdateUserCheckIn) >= 30000) {
-                            //long diffTime = (curTime - lastUpdate);
-                            //diffTime = diffTime / 1000;
-                            // Log.d("DEBUG","Yes");
-                            lastUpdateUserCheckIn = curTime;
-                            hitUrlForUserChekIn(saveManager.getUrlEnv() + Constant.URL_UerCheckIn, session_id, Constant.APP_VERSION);
-                        }
                         if ((curTime - lastUpdateForScreenOff) >= saveManager.getSelectedDimDelay() && saveManager.getSelectedDimDelay() != -1) {
-                           // long diffTime = (curTime - lastUpdateForScreenOff);
+                            // long diffTime = (curTime - lastUpdateForScreenOff);
                             //diffTime = diffTime / 1000;
-                           // Log.d("DEBUG",diffTime+ " d");
-                            if (lastUpdateForScreenOff != 0 ) {
+                            // Log.d("DEBUG",diffTime+ " d");
+                            if (lastUpdateForScreenOff != 0) {
                                 Intent i = new Intent(_context.getPackageName() + KEY_BROADCAST_FOR_SCREEN_DIM);
                                 i.putExtra(KEY_SCREEN_DIM_ON_OFF, true);
                                 LocalBroadcastManager.getInstance(_context).sendBroadcast(i);
@@ -261,24 +283,31 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                         }
 
 
-                        try {
-                            gps_interval = Integer.parseInt(saveManager.getGpsInterval()) * 1000;
-                        } catch (Exception e) {
-                            gps_interval = 10 * 1000;
-                        }
+                        //try {
+                        //    gps_interval = saveManager.getGpsInterval() * 1000;
+                        //} catch (Exception e) {
+                        //    gps_interval = 10 * 1000;
+                       // }
 
-                        Thread.sleep(gps_interval);
+                        java.util.Date date = new java.util.Date();
+                        //System.out.println(new Timestamp(date.getTime()));
+
+                        // Log.d("TIME", String.valueOf(new Timestamp(date.getTime())));
+
+                        Thread.sleep(5000);
 
 
                     } catch (InterruptedException e) {
                         // TODO Auto-generated catch block
+                        abort = true;
                         e.printStackTrace();
                     }
 
                 }
 
             }
-        }).start();
+        });
+        mThread.start();
     }
 
     private void hitUrl(String url, final String session_id, final String lat, final String lng, final String user_activity, final String time_string) {
@@ -361,14 +390,13 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
 
         int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
         int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+        int batteryPct = 100;
+        if (level != -1 && scale != -1) {
+            batteryPct = (int) ((level / (float) scale) * 100f);
+        }
+        // Log.d("DEBUG_battery",String.valueOf(batteryPct));
 
-        float batteryPct = (level * 100) / (float) scale;
-
-        final int batteryPctInt = (int) batteryPct;
-
-        // Log.d("DEBUG_battery",String.valueOf(batteryPctInt));
-
-
+        final int finalBatteryPct = batteryPct;
         final StringRequest req = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>() {
                     @Override
@@ -387,8 +415,82 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("sessionId", session_id);
                 params.put("appVersion", app_version);
-                params.put("batteryLevel", String.valueOf(batteryPctInt));
-                //Log.d("DEBUG_selected",String.valueOf(selected));
+                params.put("batteryLevel", String.valueOf(finalBatteryPct));
+                // Log.d("DEBUG_selected",String.valueOf(finalBatteryPct));
+                return params;
+            }
+        };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(3000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        // TODO Auto-generated method stub
+        AppController.getInstance().addToRequestQueue(req);
+    }
+
+
+    private void hitUrlForMessage(String url, final String session_id) {
+        // TODO Auto-generated method stub
+        final StringRequest req = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+
+                        //Log.d("DEBUG_size",String.valueOf(Constant.messageList.size()));
+                        //String message = "test" + Constant.messageList.size();
+
+
+                        try {
+                            JSONArray jsonArray = new JSONArray(response);
+
+
+                            //AppConstant.histories.clear();
+                            // AppConstant.NUM_OF_UNSEEN_HISTORY = 0;
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject tempObject = jsonArray.getJSONObject(i);
+
+                                String message = tempObject.getString("body");
+
+                                com.ips_sentry.model.Message messageObj = new com.ips_sentry.model.Message(message, false);
+                                Constant.messageList.add(messageObj);
+
+                                saveManager.setMessageObjList(Constant.messageList);
+                                Constant.messageList = saveManager.getMessageObjList();
+
+
+                                saveManager.setNumOfUnseenMessage(saveManager.getNumOfUnseenMessage() + 1);
+
+                                Constant.isIncomingMessageDuringOnResume = true;
+
+
+                                Intent fileter = new Intent(_context.getPackageName() + KEY_BROADCAST_FOR_MESSAGE);
+                                fileter.putExtra(KEY_MESSAGE, true);
+                                LocalBroadcastManager.getInstance(_context).sendBroadcast(fileter);
+
+                            }
+
+
+                            //Collections.reverse(AppConstant.histories);
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                //userId=XXX&routeId=XXX&selected=XXX
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("sessionId", session_id);
+                // Log.d("DEBUG_selected",String.valueOf(finalBatteryPct));
                 return params;
             }
         };
@@ -478,10 +580,24 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                     lastUpdateGps = curTime;
                     if (previousBestLocation2 != null) {
 
+                        // Log.d("DEBUG_loc",String.valueOf(loc.getLatitude()));
+                        // Log.d("DEBUG_prebloc",String.valueOf(previousBestLocation2.getLatitude()));
+
+
+                        //DecimalFormat df = new DecimalFormat("#.######");
+                        double loc_lat = (double) Math.round(loc.getLatitude() * 100000d) / 100000d;
+                        double loc_lng = (double) Math.round(loc.getLongitude() * 100000d) / 100000d;
+                        loc.setLatitude(loc_lat);
+                        loc.setLongitude(loc_lng);
+                        //Log.d("DEBUG_lo2",String.valueOf(loc.getLatitude()));
 
                         float distance = loc.distanceTo(previousBestLocation2);
 
+                        // Log.d("DEBUG_InM",String.valueOf(distance));
+
                         double distance_inKm = distance / 1000;
+
+                        // Log.d("DEBUG_InKm",String.valueOf(distance_inKm));
 
                         // time taken (in seconds)
                         float timeTaken = ((loc.getTime() - previousBestLocation2
@@ -490,147 +606,170 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                         // double timeTaken_inHour = (timeTaken / 60) / 60;
 
                         // calculate speed_mps(mps = METER PER SECOUND but mph = Miles Per Hour)
-                        double speed_mps = 0, speed_kph = 0;
+                        double speed_kph = 0;
                         int speed_mph = 0;
                         if (timeTaken > 0) {
                             //Log.d("DEBUG_time",String.valueOf(timeTaken));
                             //speed_mps = distance / timeTaken;
 
                             speed_kph = (distance_inKm * 3600) / timeTaken;
+                            // Log.d("DEBUG_speed_kph",String.valueOf(speed_kph));
 
                             // Log.d("DEBUG",String.valueOf(speed_kph / 1.6));
 
                             speed_mph = (int) (speed_kph / 1.6);
+                            //Log.d("DEBUG_speed_mph",String.valueOf(speed_mph));
 
                             //Log.d("DEBUG_mmh", String.valueOf(speed_mph));
                         }
 
-                        if (speed_mph >= 0) {
 
-                            //DecimalFormat df = new DecimalFormat("#.##");
-                            //speed_mps = Double.parseDouble(df.format(speed_mps));
-                            //speed_mph = Double.parseDouble(df.format(speed_mph));
-                            // Log.d("DEBUG_speed", String.valueOf(speed_mph));
-                            movement_speed = String.valueOf(speed_mph);
-                            // Log.d("DEBUG_speed_2", String.valueOf(movement_speed));
-                            // Log.d("DEBUG_mps", String.valueOf(df.format(speed_mps)));
-                            // Log.d("DEBUG_mmh", String.valueOf(df.format(speed_mph)));
-                            // Log.d("DEBUG", ".............................");
+                        //DecimalFormat df = new DecimalFormat("#.##");
+                        //speed_mps = Double.parseDouble(df.format(speed_mps));
+                        //speed_mph = Double.parseDouble(df.format(speed_mph));
+                        // Log.d("DEBUG_speed", String.valueOf(speed_mph));
 
-                            //info_text.setText("Speed: " + df.format(speed_mps) + " " + "km/h");
-                            // info_text_mph.setText("  Speed: " + df.format(speed_mph) + " "
-                            //         + "mph");
+                        // Log.d("DEBUG_speed_2", String.valueOf(movement_speed));
+                        // Log.d("DEBUG_mps", String.valueOf(df.format(speed_mps)));
+                        // Log.d("DEBUG_mmh", String.valueOf(df.format(speed_mph)));
+                        // Log.d("DEBUG", ".............................");
 
-                            //Log.d("DEBUG",String.valueOf(distance));
+                        //info_text.setText("Speed: " + df.format(speed_mps) + " " + "km/h");
+                        // info_text_mph.setText("  Speed: " + df.format(speed_mph) + " "
+                        //         + "mph");
 
-                            if (speed_mph >= 1 && locationManager.getProvider(LocationManager.GPS_PROVIDER).supportsBearing()) {
-                                // double degree = previousBestLocation2.bearingTo(loc);
-                                //Log.d("DEBUG", String.valueOf(bearing));
-
-                                //direction_text.setVisibility(View.VISIBLE);
-
-                                //Log.i(TAG, String.valueOf(degree));
-                                // double lat1 = previousBestLocation2.getLatitude();
-                                // double lat2 = loc.getLatitude();
-                                // double lon1 = previousBestLocation2.getLatitude();
-                                // double lon2 = loc.getLongitude();
-
-                                //% convert to radians:
-                                // double g2r = Math.PI / 180;
-                                // double lat1r = lat1 * g2r;
-                                // double lat2r = lat2 * g2r;
-                                // double lon1r = lon1 * g2r;
-                                //double lon2r = lon2 * g2r;
-                                ///double dlonr = lon2r - lon1r;
-                                //double y = Math.sin(dlonr) * Math.cos(lat2r);
-                                //double x = Math.cos(lat1r) * Math.sin(lat2r) - Math.sin(lat1r) * Math.cos(lat2r) * Math.cos(dlonr);
-
-                                //%compute bearning and convert back to degrees:
-                                //double degree = Math.atan2(y, x) / g2r;
+                        //Log.d("DEBUG",String.valueOf(distance));
+                        movement_speed = String.valueOf(speed_mph);
+                        // Log.d("DEBUG",String.valueOf(movement_speed));
+                        gps_moving = false;
 
 
-                                //Log.d("DeBUG_degree", String.valueOf(degree));
+                        if (speed_mph >= 1 && locationManager.getProvider(LocationManager.GPS_PROVIDER).supportsBearing()) {
+                            // double degree = previousBestLocation2.bearingTo(loc);
+                            // Log.d("DEBUG", String.valueOf(speed_mph));
 
-                                //NEW APPROACHES
-                                LatLng point1 = new LatLng(previousBestLocation2.getLatitude(), previousBestLocation2.getLongitude());
-                                LatLng point2 = new LatLng(loc.getLatitude(), loc.getLongitude());
-                                double degree = SphericalUtil.computeHeading(point1, point2);
-                                //movement_direction = String.valueOf(degree);
+                            //direction_text.setVisibility(View.VISIBLE);
+
+                            //Log.i(TAG, String.valueOf(degree));
+                            // double lat1 = previousBestLocation2.getLatitude();
+                            // double lat2 = loc.getLatitude();
+                            // double lon1 = previousBestLocation2.getLatitude();
+                            // double lon2 = loc.getLongitude();
+
+                            //% convert to radians:
+                            // double g2r = Math.PI / 180;
+                            // double lat1r = lat1 * g2r;
+                            // double lat2r = lat2 * g2r;
+                            // double lon1r = lon1 * g2r;
+                            //double lon2r = lon2 * g2r;
+                            ///double dlonr = lon2r - lon1r;
+                            //double y = Math.sin(dlonr) * Math.cos(lat2r);
+                            //double x = Math.cos(lat1r) * Math.sin(lat2r) - Math.sin(lat1r) * Math.cos(lat2r) * Math.cos(dlonr);
+
+                            //%compute bearning and convert back to degrees:
+                            //double degree = Math.atan2(y, x) / g2r;
 
 
-                                // double x1 = previousBestLocation2.getLatitude();
-                                // double y1 = previousBestLocation2.getLongitude();
-                                // double x2 = loc.getLatitude();
-                                // double y2 = loc.getLongitude();
-                                // double slope = (y2 - y1) / (x2 - x1);
+                            //Log.d("DeBUG_degree", String.valueOf(degree));
 
-                                //  if (slope > 2) {
-                                //     movement_direction = "N";
-                                // } else if (slope < -2) {
-                                //     movement_direction = "S";
-                                //  } else if (slope > -0.5 && slope <= 0.5 && (x2 - x1) < 0) {
-                                //     movement_direction = "E";
-                                // } else if (slope > -0.5 && slope <= 0.5 && (x2 - x1) > 0) {
-                                //    movement_direction = "W";
-                                //}
-                                if (speed_mph <= 5) {
-                                    if (counter_gps_moving != 10) counter_gps_moving++;
-                                    if (counter_gps_moving == 10) gps_moving = false;
-                                } else {
-                                    gps_moving = true;
-                                    counter_gps_moving = 0;
-                                }
-                                movement_direction = "";
+                            //NEW APPROACHES
+                            LatLng point1 = new LatLng(previousBestLocation2.getLatitude(), previousBestLocation2.getLongitude());
+                            LatLng point2 = new LatLng(loc.getLatitude(), loc.getLongitude());
+                            double degree = SphericalUtil.computeHeading(point1, point2);
+                            //movement_direction = String.valueOf(degree);
 
-                                if (degree >= -22.5 && degree < 22.5) {
-                                    movement_direction = "N";
 
-                                    //direction_text.setText("You are: Northbound");
-                                }
+                            // double x1 = previousBestLocation2.getLatitude();
+                            // double y1 = previousBestLocation2.getLongitude();
+                            // double x2 = loc.getLatitude();
+                            // double y2 = loc.getLongitude();
+                            // double slope = (y2 - y1) / (x2 - x1);
 
-                                if (degree >= 22.5 && degree < 67.5) {
-                                    movement_direction = "NE";
-                                    /// direction_text.setText("You are: NorthEastbound");
-                                }
+                            //  if (slope > 2) {
+                            //     movement_direction = "N";
+                            // } else if (slope < -2) {
+                            //     movement_direction = "S";
+                            //  } else if (slope > -0.5 && slope <= 0.5 && (x2 - x1) < 0) {
+                            //     movement_direction = "E";
+                            // } else if (slope > -0.5 && slope <= 0.5 && (x2 - x1) > 0) {
+                            //    movement_direction = "W";
+                            //}
 
-                                if (degree >= 67.5 && degree < 112.5) {
-                                    movement_direction = "E";
-                                    //  direction_text.setText("You are: Eastbound");
-                                }
 
-                                if (degree >= 112.5 && degree < 157.5) {
-                                    movement_direction = "SE";
-                                    // direction_text.setText("You are: SouthEastbound");
-                                }
+                            gps_moving_circle = makeShiftToOneDigit(gps_moving_circle, 1);
 
-                                if (degree >= 157.5 || degree < -157.5) {
-                                    movement_direction = "S";
-                                    // direction_text.setText("You are: SouthWestbound");
-                                }
 
-                                if (degree >= -157.5 && degree < -112.5) {
-                                    movement_direction = "SW";
-                                    //direction_text.setText("You are: Westbound");
-                                }
+                            gps_moving = true;
 
-                                if (degree >= -112.5 && degree < -67.5) {
-                                    movement_direction = "W";
-                                    //direction_text.setText("You are: NorthWestbound");
-                                }
-                                if (degree >= -67.5 && degree < -22.5) {
-                                    movement_direction = "NW";
-                                    //direction_text.setText("You are: NorthWestbound");
-                                }
+                            movement_direction = "";
 
-                            } else {
-                                gps_moving = false;
-                                movement_direction = null;
+                            if (degree >= -22.5 && degree < 22.5) {
+                                movement_direction = "N";
+
+                                //direction_text.setText("You are: Northbound");
                             }
+
+                            if (degree >= 22.5 && degree < 67.5) {
+                                movement_direction = "NE";
+                                /// direction_text.setText("You are: NorthEastbound");
+                            }
+
+                            if (degree >= 67.5 && degree < 112.5) {
+                                movement_direction = "E";
+                                //  direction_text.setText("You are: Eastbound");
+                            }
+
+                            if (degree >= 112.5 && degree < 157.5) {
+                                movement_direction = "SE";
+                                // direction_text.setText("You are: SouthEastbound");
+                            }
+
+                            if (degree >= 157.5 || degree < -157.5) {
+                                movement_direction = "S";
+                                // direction_text.setText("You are: SouthWestbound");
+                            }
+
+                            if (degree >= -157.5 && degree < -112.5) {
+                                movement_direction = "SW";
+                                //direction_text.setText("You are: Westbound");
+                            }
+
+                            if (degree >= -112.5 && degree < -67.5) {
+                                movement_direction = "W";
+                                //direction_text.setText("You are: NorthWestbound");
+                            }
+                            if (degree >= -67.5 && degree < -22.5) {
+                                movement_direction = "NW";
+                                //direction_text.setText("You are: NorthWestbound");
+                            }
+
+                        } else {
+                            gps_moving = false;
+                            movement_direction = null;
+
+                            gps_moving_circle = makeShiftToOneDigit(gps_moving_circle, 0);
                         }
+
                         previousBestLocation2 = loc;
+
+                        gps_moving_circle_counter++;
+                        if (gps_moving_circle_counter > 6) gps_moving_circle_counter = 0;
 
                     } else {
+                        // DecimalFormat df = new DecimalFormat("#.######");
+                        double loc_lat = (double) Math.round(loc.getLatitude() * 100000d) / 100000d;
+                        double loc_lng = (double) Math.round(loc.getLongitude() * 100000d) / 100000d;
+                        loc.setLatitude(loc_lat);
+                        loc.setLongitude(loc_lng);
                         previousBestLocation2 = loc;
+                    }
+
+
+                    if (numOfZero(gps_moving_circle) >= 4) {
+                        calculateUserActivity(Constant.USER_ACTIVITY_IDLE, curTime);
+                    } else {
+                        saveManager.setGpsInterval(saveManager.getPermanentGpsInterval());
+                        calculateUserActivity(Constant.USER_ACTIVITY_MOVING, curTime);
                     }
 
                 }
@@ -683,6 +822,25 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
     }
 
 
+    private int numOfZero(int[] value) {
+        int counter = 0;
+        for (int value1 : value) {
+            if (value1 == 0) counter++;
+        }
+
+        // Log.d("DEBUG_c",value[0] + " " + value[1] + " " + value[2] + " " + value[3] + " " + value[4] + " " + value[5] + " " + value[6]);
+        return counter;
+    }
+
+    private int[] makeShiftToOneDigit(int[] value, int needToin) {
+        for (int i = 6; i > 0; i--) {
+            value[i] = value[i - 1];
+        }
+        value[0] = needToin;
+        return value;
+
+    }
+
     /**
      * SENSOR MANAGER
      */
@@ -722,93 +880,17 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                 if (new_start) {
                     new_start = false;
                     user_activity = saveManager.getUserCurrentActivity();
-                } else if (speed <= 1.1 && !gps_moving) {
-                    if (counter_idle < 3) counter_idle++;
-                    if (counter_idle >= 2) {
-                        counter_moving = 0;
-                        user_activity = Constant.USER_ACTIVITY_IDLE;
-                    }
-                } else {
-                    if (counter_moving <= 3) counter_moving++;
-                    if (counter_moving >= 2) {
-                        counter_idle = 0;
-                        user_activity = Constant.USER_ACTIVITY_MOVING;
-                    }
+                } else if (speed <= 1.5 && !gps_moving) {
 
+                    user_activity = Constant.USER_ACTIVITY_IDLE;
 
-                }
-
-                if (saveManager.getUserCurrentActivity().equalsIgnoreCase(Constant.USER_ACTIVITY_STOPPED) && user_activity.equalsIgnoreCase(Constant.USER_ACTIVITY_IDLE)) {
-                    user_activity = Constant.USER_ACTIVITY_STOPPED;
+                } else if (gps_moving && speed > 1.5) {
+                    counter_idle = 0;
+                    user_activity = Constant.USER_ACTIVITY_MOVING;
                 }
 
 
-                if (saveManager.getUserCurrentActivity().equalsIgnoreCase(user_activity) && saveManager.getRecordTime() > 0) {
-
-                    long time_interval_between_user_activity = curTime - saveManager.getRecordTime();
-
-                    int time_x;
-                    int time_array[] = new int[4];
-
-                    time_x = (int) (time_interval_between_user_activity / 1000);
-                    time_array[3] = time_x % 60;
-                    time_x /= 60;
-                    time_array[2] = time_x % 60;
-                    time_x /= 60;
-                    time_array[1] = time_x % 24;
-                    time_x /= 24;
-                    time_array[0] = time_x;
-
-                    //i.e. "Idle: 3 mins", "Stopped: 6 hours, 3 mins", "Moving: 36 mins", "Stopped: 1 hour"
-                    time_string = "";
-                    for (int loop = 0; loop < 3; loop++) {
-                        if (time_array[loop] == 0) continue;
-                        if (loop == 2) {
-                            time_string = time_string + " " + String.valueOf(time_array[loop]) + " " + time_unit[loop];
-                        } else {
-                            time_string = time_string + " " + String.valueOf(time_array[loop]) + " " + time_unit[loop] + ",";
-                        }
-                    }
-
-
-                    if ((time_array[0] >= 1 || time_array[1] >= 1 || time_array[2] >= Integer.parseInt(saveManager.getStoppedThreshold())) && saveManager.getUserCurrentActivity().equalsIgnoreCase(Constant.USER_ACTIVITY_IDLE)) {
-                        time_string = " 0 mins";
-                        saveManager.setRecordTime(curTime);
-                        saveManager.setUserCurrentActivity(Constant.USER_ACTIVITY_STOPPED);
-                    }
-
-                    if (time_string.length() <= 1) time_string = " 0 mins";
-
-
-                } else {
-                    time_string = " 0 mins";
-                    //recorded_time = curTime;
-                    saveManager.setRecordTime(curTime);
-                    saveManager.setUserCurrentActivity(user_activity);
-                }
-
-                //Fire the intent with activity name & confidence
-                Intent i = new Intent(getPackageName() + "ImActive");
-                if (user_activity.equalsIgnoreCase(Constant.USER_ACTIVITY_MOVING)) {
-
-
-                    if (movement_speed != null && movement_direction != null) {
-                        String temp = saveManager.getUserCurrentActivity() + ": " + movement_speed + " MPH" + " " + movement_direction + " " + time_string;
-                        i.putExtra(KEY_USER_STATUS, temp);
-                    } else if (movement_speed != null && movement_direction == null) {
-                        String temp = saveManager.getUserCurrentActivity() + ": " + movement_speed + " MPH" + " " + time_string;
-                        i.putExtra(KEY_USER_STATUS, temp);
-                    } else {
-                        i.putExtra(KEY_USER_STATUS, saveManager.getUserCurrentActivity() + ": " + time_string);
-                    }
-                    //Moving: N 15 MPH
-
-
-                } else {
-                    i.putExtra(KEY_USER_STATUS, saveManager.getUserCurrentActivity() + ": " + time_string);
-                }
-                LocalBroadcastManager.getInstance(this).sendBroadcast(i);
-
+                // calculateUserActivity(user_activity, curTime);
                 //Log.d("onSensorChanged", System.currentTimeMillis() + "=movement_speed=" + movement_speed);
 
                 last_x = x;
@@ -817,6 +899,92 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
             }
         }
     }
+
+
+    public void calculateUserActivity(String user_activity, long curTime) {
+
+
+        if (saveManager.getUserCurrentActivity().equalsIgnoreCase(Constant.USER_ACTIVITY_STOPPED) && user_activity.equalsIgnoreCase(Constant.USER_ACTIVITY_IDLE)) {
+            user_activity = Constant.USER_ACTIVITY_STOPPED;
+        }
+
+
+        if (saveManager.getUserCurrentActivity().equalsIgnoreCase(user_activity) && saveManager.getRecordTime() > 0) {
+
+            long time_interval_between_user_activity = curTime - saveManager.getRecordTime();
+
+            int time_x;
+            int time_array[] = new int[4];
+
+            time_x = (int) (time_interval_between_user_activity / 1000);
+            time_array[3] = time_x % 60;
+            time_x /= 60;
+            time_array[2] = time_x % 60;
+            time_x /= 60;
+            time_array[1] = time_x % 24;
+            time_x /= 24;
+            time_array[0] = time_x;
+
+            //i.e. "Idle: 3 mins", "Stopped: 6 hours, 3 mins", "Moving: 36 mins", "Stopped: 1 hour"
+            time_string = "";
+            for (int loop = 0; loop < 3; loop++) {
+                if (time_array[loop] == 0) continue;
+                if (loop == 2) {
+                    time_string = time_string + " " + String.valueOf(time_array[loop]) + " " + time_unit[loop];
+                } else {
+                    time_string = time_string + " " + String.valueOf(time_array[loop]) + " " + time_unit[loop] + ",";
+                }
+            }
+
+
+            if ((time_array[0] >= 1 || time_array[1] >= 1 ||
+                    time_array[2] >= Integer.parseInt(saveManager.getStoppedThreshold()))
+                    && saveManager.getUserCurrentActivity().equalsIgnoreCase(Constant.USER_ACTIVITY_IDLE)) {
+                time_string = " 0 mins";
+                saveManager.setRecordTime(curTime);
+                saveManager.setUserCurrentActivity(Constant.USER_ACTIVITY_STOPPED);
+                if(saveManager.getGpsInterval() < 60){
+                    //saveManager.setPermanentGpsInterval(saveManager.getGpsInterval());
+                    //force gps interval to 60 sec
+                    saveManager.setGpsInterval(60);
+                }
+
+
+            }
+
+            if (time_string.length() <= 1) time_string = " 0 mins";
+
+
+        } else {
+            time_string = " 0 mins";
+            //recorded_time = curTime;
+            saveManager.setRecordTime(curTime);
+            saveManager.setUserCurrentActivity(user_activity);
+        }
+
+        //Fire the intent with activity name & confidence
+        Intent i = new Intent(getPackageName() + "ImActive");
+        if (user_activity.equalsIgnoreCase(Constant.USER_ACTIVITY_MOVING)) {
+
+
+            if (movement_speed != null && movement_direction != null) {
+                String temp = saveManager.getUserCurrentActivity() + ": " + movement_speed + " MPH" + " " + movement_direction + " " + time_string;
+                i.putExtra(KEY_USER_STATUS, temp);
+            } else if (movement_speed != null && movement_direction == null) {
+                String temp = saveManager.getUserCurrentActivity() + ": " + movement_speed + " MPH" + " " + time_string;
+                i.putExtra(KEY_USER_STATUS, temp);
+            } else {
+                i.putExtra(KEY_USER_STATUS, saveManager.getUserCurrentActivity() + ": " + time_string);
+            }
+            //Moving: N 15 MPH
+
+
+        } else {
+            i.putExtra(KEY_USER_STATUS, saveManager.getUserCurrentActivity() + ": " + time_string);
+        }
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
+    }
+
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -827,11 +995,16 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
     public void onDestroy() {
         // handler.removeCallbacks(sendUpdatesToUI);
         super.onDestroy();
-        // Log.v("STOP_SERVICE", "DONE");
+        //Log.v("STOP_SERVICE", "DONE");
         locationManager.removeUpdates(listener);
         senSensorManager.unregisterListener(this);
 
         mWakeLock.release();
+
+        mThread.interrupt();
+
+
+        //stopSelf();
     }
 
     public double CalculationByDistance(LatLng StartP, LatLng EndP) {

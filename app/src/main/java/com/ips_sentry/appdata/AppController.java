@@ -11,6 +11,7 @@ import com.android.volley.toolbox.HttpClientStack;
 import com.android.volley.toolbox.HttpStack;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
+import com.ips_sentry.utils.Constant;
 import com.ips_sentry.utils.LruBitmapCache;
 
 import org.apache.http.conn.ClientConnectionManager;
@@ -34,11 +35,17 @@ public class AppController extends Application {
 
     private SharedPreferences _preferences;
 
+    private  SaveManager saveManager;
+
     @Override
     public void onCreate() {
         super.onCreate();
         mInstance = this;
         _preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        saveManager = new SaveManager(this);
+
+        Constant.messageList = saveManager.getMessageObjList();
+
     }
 
     public static synchronized AppController getInstance() {
