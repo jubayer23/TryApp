@@ -8,7 +8,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="6">
+        android:layout_weight="8">
 
         <ListView
             android:id="@+id/list_admin"
@@ -33,34 +33,22 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:orientation="vertical"
-        android:layout_weight="4">
+        android:layout_weight="2"
+        android:orientation="vertical">
 
         <Button
-            android:id="@+id/btn_one_minute_eta"
+            android:id="@+id/btn_now_arriving"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
             android:layout_weight="1"
             android:background="@drawable/btn_selector_submit"
-            android:text="1 MIN ETA"
+            android:text="Now Arriving..."
             android:textColor="@color/white"
             android:textSize="30sp" />
 
 
-        <Button
-            android:id="@+id/btn_three_minute_eta"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_weight="1"
-            android:background="@drawable/btn_selector_submit"
-            android:text="3 MIN ETA"
-            android:textColor="@color/white"
-            android:textSize="30sp" />
     </LinearLayout>
 
 

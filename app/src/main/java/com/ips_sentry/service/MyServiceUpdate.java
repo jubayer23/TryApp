@@ -22,9 +22,16 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.gms.maps.model.LatLng;
@@ -238,20 +245,20 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                             if ((isGPSEnabled || isNetworkEnabled) &&
                                     ((curTime - lastUpdateForGpsInterval) >= saveManager.getGpsInterval() * 1000)) {
 
-                              //  Log.d("DEBUG", "user gps ok");
+                                //  Log.d("DEBUG", "user gps ok");
                                 lastUpdateForGpsInterval = curTime;
 
                                 String user_lat = saveManager.getUserLat();
                                 String user_lang = saveManager.getUserLang();
 
 
-                                hitUrl(saveManager.getGpsUrl(), session_id, user_lat, user_lang, saveManager.getUserCurrentActivity(), time_string);
+                                hitUrlForGps(saveManager.getGpsUrl(), session_id, user_lat, user_lang, saveManager.getUserCurrentActivity(), time_string);
 
 
                             }
 
                             //HIT URL for message
-                            hitUrlForMessage(saveManager.getUrlEnv() + Constant.URL_UserMessage, session_id);
+                            hitUrlForMessage(saveManager.getUrlEnv() + Constant.URL_UserNewInComingMessage, session_id);
 
 
                             //HIT URL user check in
@@ -266,7 +273,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
 
                         }
 
-                        // hitUrl("http://dev.ips-systems.com/Sentry/MobileAppUpdateLocation?sessionId=2ifkpgbzklmkygnhmpixcx24&lat=24.912785&lng=91.9535703");
+                        // hitUrlForGps("http://dev.ips-systems.com/Sentry/MobileAppUpdateLocation?sessionId=2ifkpgbzklmkygnhmpixcx24&lat=24.912785&lng=91.9535703");
 
 
                         if ((curTime - lastUpdateForScreenOff) >= saveManager.getSelectedDimDelay() && saveManager.getSelectedDimDelay() != -1) {
@@ -287,7 +294,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                         //    gps_interval = saveManager.getGpsInterval() * 1000;
                         //} catch (Exception e) {
                         //    gps_interval = 10 * 1000;
-                       // }
+                        // }
 
                         java.util.Date date = new java.util.Date();
                         //System.out.println(new Timestamp(date.getTime()));
@@ -310,7 +317,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
         mThread.start();
     }
 
-    private void hitUrl(String url, final String session_id, final String lat, final String lng, final String user_activity, final String time_string) {
+    private void hitUrlForGps(String url, final String session_id, final String lat, final String lng, final String user_activity, final String time_string) {
         // TODO Auto-generated method stub
 
 
@@ -385,6 +392,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
 
     private void hitUrlForUserChekIn(String url, final String session_id, final String app_version) {
         // TODO Auto-generated method stub
+        //Log.d("debug", "before");
         IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         Intent batteryStatus = _context.registerReceiver(null, ifilter);
 
@@ -397,15 +405,39 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
         // Log.d("DEBUG_battery",String.valueOf(batteryPct));
 
         final int finalBatteryPct = batteryPct;
+
+        //Log.d("debug", String.valueOf(finalBatteryPct));
+
         final StringRequest req = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
 
+                        //Log.d("debug", "POST");
+
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+
+                NetworkResponse networkResponse = error.networkResponse;
+                if (networkResponse != null) {
+                    Log.e("Volley", "Error. HTTP Status Code:" + networkResponse.statusCode);
+                }
+
+                if (error instanceof TimeoutError) {
+                    Log.e("Volley", "TimeoutError");
+                } else if (error instanceof NoConnectionError) {
+                    Log.e("Volley", "NoConnectionError");
+                } else if (error instanceof AuthFailureError) {
+                    Log.e("Volley", "AuthFailureError");
+                } else if (error instanceof ServerError) {
+                    Log.e("Volley", networkResponse.toString());
+                } else if (error instanceof NetworkError) {
+                    Log.e("Volley", "NetworkError");
+                } else if (error instanceof ParseError) {
+                    Log.e("Volley", "ParseError");
+                }
 
             }
         }) {
@@ -419,12 +451,16 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                 // Log.d("DEBUG_selected",String.valueOf(finalBatteryPct));
                 return params;
             }
+
+
         };
 
-        req.setRetryPolicy(new DefaultRetryPolicy(3000,
+        req.setRetryPolicy(new DefaultRetryPolicy(60000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         // TODO Auto-generated method stub
         AppController.getInstance().addToRequestQueue(req);
+
+        //Log.d("debug", "past");
     }
 
 
@@ -450,12 +486,16 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                                 JSONObject tempObject = jsonArray.getJSONObject(i);
 
                                 String message = tempObject.getString("body");
+                                int id = tempObject.getInt("id");
+
 
                                 com.ips_sentry.model.Message messageObj = new com.ips_sentry.model.Message(message, false);
+                                messageObj.setId(id);
+                                messageObj.setType(Constant.incomingMessage);
                                 Constant.messageList.add(messageObj);
 
-                                saveManager.setMessageObjList(Constant.messageList);
-                                Constant.messageList = saveManager.getMessageObjList();
+                               // saveManager.setMessageObjList(Constant.messageList);
+                                //Constant.messageList = saveManager.getMessageObjList();
 
 
                                 saveManager.setNumOfUnseenMessage(saveManager.getNumOfUnseenMessage() + 1);
@@ -943,7 +983,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                 time_string = " 0 mins";
                 saveManager.setRecordTime(curTime);
                 saveManager.setUserCurrentActivity(Constant.USER_ACTIVITY_STOPPED);
-                if(saveManager.getGpsInterval() < 60){
+                if (saveManager.getGpsInterval() < 60) {
                     //saveManager.setPermanentGpsInterval(saveManager.getGpsInterval());
                     //force gps interval to 60 sec
                     saveManager.setGpsInterval(60);

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -78,10 +79,14 @@ public class MessageListAdapter extends BaseAdapter {
 
             viewHolder = new ViewHolder();
 
-
+            viewHolder.content = (LinearLayout) convertView.findViewById(R.id.content);
             viewHolder.tv_message = (TextView) convertView
                     .findViewById(R.id.tv_message);
-            viewHolder.ll_contentWithBackground = (LinearLayout)convertView.findViewById(R.id.contentWithBackground);
+
+            viewHolder.tv_reply_alert = (TextView) convertView
+                    .findViewById(R.id.tv_reply_alert);
+
+            viewHolder.ll_contentWithBackground = (LinearLayout) convertView.findViewById(R.id.contentWithBackground);
 
             convertView.setTag(viewHolder);
         } else {
@@ -90,17 +95,73 @@ public class MessageListAdapter extends BaseAdapter {
 
         final Message message = Displayedplaces.get(position);
 
-        if(message.isSeen()){
-            viewHolder.ll_contentWithBackground.setBackgroundResource(R.drawable.out_message_bg_2);
-        }else{
-            viewHolder.ll_contentWithBackground.setBackgroundResource(R.drawable.out_message_bg);
+        viewHolder.tv_reply_alert.setVisibility(View.GONE);
+
+
+        if (message.getType().equalsIgnoreCase(Constant.outGoingMessage)) {
+            //viewHolder.ll_contentWithBackground.setBackgroundResource(R.drawable.in_message_bg);
+
+            // RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) viewHolder.ll_contentWithBackground.getLayoutParams();
+            // layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            // viewHolder.ll_contentWithBackground.setLayoutParams(layoutParams);
+
+
+            viewHolder.ll_contentWithBackground.setBackgroundResource(R.drawable.in_message_bg);
+
+            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) viewHolder.ll_contentWithBackground.getLayoutParams();
+            layoutParams.gravity = Gravity.RIGHT;
+            viewHolder.ll_contentWithBackground.setLayoutParams(layoutParams);
+
+            RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) viewHolder.content.getLayoutParams();
+            lp.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
+            lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            viewHolder.content.setLayoutParams(lp);
+            layoutParams = (LinearLayout.LayoutParams) viewHolder.tv_message.getLayoutParams();
+            layoutParams.gravity = Gravity.RIGHT;
+            viewHolder.tv_message.setLayoutParams(layoutParams);
+
+
+        } else {
+            if (message.isSeen()) {
+                viewHolder.ll_contentWithBackground.setBackgroundResource(R.drawable.out_message_bg_2);
+            } else {
+                viewHolder.ll_contentWithBackground.setBackgroundResource(R.drawable.out_message_bg);
+            }
+
+
+            if(message.isReplied() ){
+                viewHolder.tv_reply_alert.setVisibility(View.VISIBLE);
+            }
+            // RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) viewHolder.ll_contentWithBackground.getLayoutParams();
+            // layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+            // viewHolder.ll_contentWithBackground.setLayoutParams(layoutParams);
+
+
+            //viewHolder.ll_contentWithBackground.setBackgroundResource(R.drawable.out_message_bg_2);
+
+            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) viewHolder.ll_contentWithBackground.getLayoutParams();
+            layoutParams.gravity = Gravity.LEFT;
+            viewHolder.ll_contentWithBackground.setLayoutParams(layoutParams);
+
+            RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) viewHolder.content.getLayoutParams();
+            lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, 0);
+            lp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+            viewHolder.content.setLayoutParams(lp);
+            layoutParams = (LinearLayout.LayoutParams) viewHolder.tv_message.getLayoutParams();
+            layoutParams.gravity = Gravity.LEFT;
+            viewHolder.tv_message.setLayoutParams(layoutParams);
+
+            //layoutParams = (LinearLayout.LayoutParams) holder.txtInfo.getLayoutParams();
+            // layoutParams.gravity = Gravity.LEFT;
+            // holder.txtInfo.setLayoutParams(layoutParams);
+
+
         }
 
         final String body = message.getBody();
 
 
         viewHolder.tv_message.setText(body);
-
 
 
         return convertView;
@@ -113,10 +174,11 @@ public class MessageListAdapter extends BaseAdapter {
     }
 
 
-
     private static class ViewHolder {
         private TextView tv_message;
         private LinearLayout ll_contentWithBackground;
+        public LinearLayout content;
+        public TextView tv_reply_alert;
     }
 
 

@@ -6,10 +6,10 @@ import java.util.ArrayList;
 
 public class Constant {
 
-    public static final String APP_VERSION = "1.23";
+    public static final String APP_VERSION = "1.24";
 
     public static final String URL_PREFIX = "http://";
-
+///http://dev.ips-systems.com/home/MobileAppSignIn
     public static String URL_ENV = URL_PREFIX + "dev.";
 
     public static String URL_LOGIN = "ips-systems.com/home/MobileAppSignIn";
@@ -17,6 +17,7 @@ public class Constant {
     public static String URL_GPSUpdate = "IPS-Systems.com/Sentry/MobileAppUpdateLocation";
     public static String URL_TRACKING = "IPS-Systems.com/Sentry/MobileAppNewStatus";
     public static String URL_VALET = "IPS-Systems.com/VPTS/MobileAppRequestCall";
+
 
     public static String URL_SIGNOUT = "IPS-Systems.com/home/MobileAppSignOut";
 
@@ -33,7 +34,9 @@ public class Constant {
 
     public static final String URL_SITE_INDIVIDUALS = "IPS-Systems.com/Sentry/MobileAppGetSiteIndividuals";
 
-    public static final String URL_UserMessage = "ips-systems.com/Sentry/GetMessages";
+    public static final String URL_UserNewInComingMessage = "ips-systems.com/Sentry/GetUnreadMessages";
+    public static final String URL_UserAllMessage = "ips-systems.com/Sentry/GetMessages";
+    public static final String URL_UserSendMessage = "ips-systems.com/Sentry/SendMessage";
 
     public static final String URL_ARRIVAL_NOTIFICATIONS = "ips-systems.com/Sentry/ArrivalNotification";
 
@@ -79,6 +82,11 @@ public class Constant {
     public static boolean isMessageLayoutResume = false;
 
     public static ArrayList<Message> messageList ;
+
+
+    public static String incomingMessage = "in";
+
+    public static String outGoingMessage = "out";
 
 
     public static void makeMessageSeen(){

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#80000000"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:weightSum="10">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+
+        android:background="@drawable/layout_bg_rounded"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:weightSum="4">
+
+        <!--  Password Label -->
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp">
+
+            <EditText
+                android:id="@+id/dialog_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Reply"
+                android:textColor="@color/black" />
+        </android.support.design.widget.TextInputLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_marginTop="20dp"
+            android:background="@color/material_blue_grey_950" />
+
+        <Button
+            android:id="@+id/dialog_submit"
+            android:layout_width="fill_parent"
+            android:layout_height="60dp"
+            android:background="@drawable/btn_login_selector"
+            android:text="Submit"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+
+    </LinearLayout>
+
+</LinearLayout>

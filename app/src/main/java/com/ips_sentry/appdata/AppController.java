@@ -19,6 +19,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.HttpParams;
 
+import java.util.ArrayList;
+
 public class AppController extends Application {
 
     private static final String SET_COOKIE_KEY = "Set-Cookie";
@@ -44,7 +46,7 @@ public class AppController extends Application {
         _preferences = PreferenceManager.getDefaultSharedPreferences(this);
         saveManager = new SaveManager(this);
 
-        Constant.messageList = saveManager.getMessageObjList();
+       Constant.messageList = new ArrayList<>();
 
     }
 

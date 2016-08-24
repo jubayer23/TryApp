@@ -2,12 +2,14 @@ package com.ips_sentry.fragment;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -29,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ShowRoutesFragment extends Fragment {
+public class ShowRoutesFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener{
 
 	private ListView listView;
 	private RouteListAdapter routeListAdapter;
@@ -40,6 +42,8 @@ public class ShowRoutesFragment extends Fragment {
 	private ProgressBar progressBar;
 
 	private SaveManager saveManager;
+
+	private SwipeRefreshLayout swipeRefreshLayout;
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -81,11 +85,16 @@ public class ShowRoutesFragment extends Fragment {
 		progressBar.setVisibility(View.INVISIBLE);
 
 		listView = (ListView) getActivity().findViewById(R.id.list);
+
+		swipeRefreshLayout = (SwipeRefreshLayout) getActivity().findViewById(R.id.swipe_refresh_layout);
+		swipeRefreshLayout.setOnRefreshListener(this);
 	}
 
 	private void sendRequestToServer() {
 
-		progressBar.setVisibility(View.VISIBLE);
+		//progressBar.setVisibility(View.VISIBLE);
+
+		swipeRefreshLayout.setRefreshing(true);
 
 		String url = saveManager.getUrlEnv() + Constant.URL_SHOW_ROUTES;
 
@@ -106,6 +115,7 @@ public class ShowRoutesFragment extends Fragment {
 
 						if (progressBar.getVisibility() == View.VISIBLE)
 							progressBar.setVisibility(View.INVISIBLE);
+						swipeRefreshLayout.setRefreshing(false);
 
 
 					}
@@ -114,6 +124,7 @@ public class ShowRoutesFragment extends Fragment {
 			public void onErrorResponse(VolleyError error) {
 				if (progressBar.getVisibility() == View.VISIBLE)
 					progressBar.setVisibility(View.INVISIBLE);
+				swipeRefreshLayout.setRefreshing(false);
 
 			}
 		}) {
@@ -126,13 +137,18 @@ public class ShowRoutesFragment extends Fragment {
 			}
 		};
 
+		//AppController.getInstance().addToRequestQueue(req);
+
+		req.setRetryPolicy(new DefaultRetryPolicy(30000,
+				DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+		// TODO Auto-generated method stub
 		AppController.getInstance().addToRequestQueue(req);
 
 	}
 
 	private void parseJsonFeed(JSONArray response) {
 
-
+		routes.clear();
 		for (int i = 0; i < response.length(); i++) {
 
 			JSONObject tempObject = null;
@@ -152,6 +168,13 @@ public class ShowRoutesFragment extends Fragment {
 
 		}
 
+
+	}
+
+	@Override
+	public void onRefresh() {
+
+		sendRequestToServer();
 
 	}
 }

@@ -28,7 +28,7 @@ dependencies {
     compile 'com.android.support:design:22.2.0'
 
 
-    compile files('libs/volley_20150813.jar')
+    compile 'com.android.volley:volley:1.0.0'
     compile files('libs/gson-2.3.1.jar')
 
     compile 'com.google.maps.android:android-maps-utils:0.3+'

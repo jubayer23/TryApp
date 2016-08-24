@@ -5,7 +5,6 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,7 +37,7 @@ import java.util.Map;
 
 public class AdminFragment extends Fragment {
 
-    private Button btn_one_minute_eta, btn_three_minute_eta;
+    private Button btn_now_arriving;
 
 
     private ListView listView;
@@ -79,12 +78,11 @@ public class AdminFragment extends Fragment {
         listView.setAdapter(routeSelectedListAdapter);
 
 
-
         RouteSelectedListAdapter.selectedId = "";
         sendRequestToServerForFetchingRoutes();
 
 
-        btn_one_minute_eta.setOnClickListener(new View.OnClickListener() {
+        btn_now_arriving.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -106,27 +104,6 @@ public class AdminFragment extends Fragment {
 
         });
 
-        btn_three_minute_eta.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                pDialog.show();
-
-                if (!RouteSelectedListAdapter.selectedId.isEmpty()) {
-                    pDialog.show();
-
-                    hitUrlForEta(saveManager.getUrlEnv() +
-                                    Constant.URL_ARRIVAL_NOTIFICATIONS,
-                            saveManager.getSessionToken(),
-                            RouteSelectedListAdapter.selectedId,
-                            THREE_MIN_ETA_SEC);
-                } else {
-                    Toast.makeText(getActivity(), "Please Select A Route", Toast.LENGTH_LONG).show();
-                }
-            }
-
-
-        });
 
     }
 
@@ -134,7 +111,7 @@ public class AdminFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-       // Log.d("DEBUG",String.valueOf(SKIP_ONRESUME));
+        // Log.d("DEBUG",String.valueOf(SKIP_ONRESUME));
         if (SKIP_ONRESUME) {
             SKIP_ONRESUME = false;
         } else {
@@ -158,8 +135,7 @@ public class AdminFragment extends Fragment {
 
         listView = (ListView) getActivity().findViewById(R.id.list_admin);
 
-        btn_one_minute_eta = (Button) getActivity().findViewById(R.id.btn_one_minute_eta);
-        btn_three_minute_eta = (Button) getActivity().findViewById(R.id.btn_three_minute_eta);
+        btn_now_arriving = (Button) getActivity().findViewById(R.id.btn_now_arriving);
 
         pDialog = new ProgressDialog(getActivity());
         pDialog.setMessage("Sending Your Response.... Please wait...");

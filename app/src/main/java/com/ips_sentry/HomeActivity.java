@@ -1,5 +1,6 @@
 package com.ips_sentry;
 
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -21,13 +22,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.gson.Gson;
 import com.ips_sentry.appdata.AppController;
 import com.ips_sentry.appdata.SaveManager;
 import com.ips_sentry.fragment.AdminFragment;
@@ -36,12 +37,17 @@ import com.ips_sentry.fragment.MessagesFragment;
 import com.ips_sentry.fragment.ShowRoutesFragment;
 import com.ips_sentry.fragment.ValetFragment;
 import com.ips_sentry.ips.R;
+import com.ips_sentry.model.Message;
 import com.ips_sentry.service.MyServiceUpdate;
 import com.ips_sentry.userview.AboutPage;
 import com.ips_sentry.userview.SettingPreview;
 import com.ips_sentry.utils.Constant;
 import com.ips_sentry.utils.DeviceInfoUtils;
 import com.ips_sentry.utils.DummyActivity;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -88,7 +94,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     private TextView tv_batterylevel;
 
+
+    private ProgressDialog pDialogHome;
    // private static boolean isBatteryPlugedIn = false;
+
+    private Gson gson;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -97,10 +107,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         setContentView(R.layout.activity_home);
 
-
         init();
 
         registerCustomReceiver();
+
+        hitUrlForAllMessage(saveManager.getUrlEnv() + Constant.URL_UserAllMessage, saveManager.getSessionToken());
 
         Bundle bundle = new Bundle();
         bundle.putBoolean(MainActivity.KEY_TRAFFIC_INFO, saveManager.getTrafficInfo());
@@ -126,6 +137,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private void init() {
 
         saveManager = new SaveManager(this);
+
+        gson = new Gson();
 
         btn_showmap = (LinearLayout) findViewById(R.id.btn_showmap);
         btn_showmap.setOnClickListener(this);
@@ -176,6 +189,13 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         //changeBatteryIcon(DeviceInfoUtils.getBatteryLevel(this));
 
+
+        pDialogHome = new ProgressDialog(HomeActivity.this);
+        pDialogHome.setMessage("Loading.... Please wait...");
+        pDialogHome.setIndeterminate(false);
+        pDialogHome.setCancelable(false);
+        //pDialogHome.show();
+
     }
 
     private void registerCustomReceiver() {
@@ -198,8 +218,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             public void onReceive(Context context, Intent intent) {
 
                 boolean onORoff = intent.getBooleanExtra(MyServiceUpdate.KEY_SCREEN_DIM_ON_OFF, false);
+                boolean isPlugged = DeviceInfoUtils.isPlugged(HomeActivity.this);
 
-                if (onORoff) {
+
+                if (onORoff && !isPlugged) {
                     screenDimOnFlag = true;
                     //Settings.System.putInt(HomeActivity.this.getContentResolver(),
                     //        Settings.System.SCREEN_BRIGHTNESS, 1);
@@ -662,6 +684,81 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         return super.dispatchTouchEvent(event);
 
 
+    }
+
+
+    private void hitUrlForAllMessage(String url, final String session_id) {
+
+        pDialogHome.show();
+
+        // TODO Auto-generated method stub
+        final StringRequest req = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+                        Log.d("DEbug","onResponse");
+
+                        Constant.messageList.clear();
+
+                        try {
+                            JSONArray jsonArray = new JSONArray(response);
+
+
+                            //AppConstant.histories.clear();
+                            // AppConstant.NUM_OF_UNSEEN_HISTORY = 0;
+                            for (int i = 0; i < jsonArray.length(); i++) {
+
+                                JSONObject tempObject = jsonArray.getJSONObject(i);
+
+                                Message message = gson.fromJson(tempObject.toString(), Message.class);
+
+                                if(tempObject.getString("read") != null)message.setSeen(true);
+                                else message.setSeen(false);
+
+                                Constant.messageList.add(message);
+
+                            }
+
+
+                            //Collections.reverse(AppConstant.histories);
+
+                            pDialogHome.dismiss();
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+
+                            pDialogHome.dismiss();
+
+                            Log.d("DEbug","tryCatch");
+                        }
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                pDialogHome.dismiss();
+
+                Log.d("DEbug","error");
+
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                //userId=XXX&routeId=XXX&selected=XXX
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("sessionId", session_id);
+                // Log.d("DEBUG_selected",String.valueOf(finalBatteryPct));
+                return params;
+            }
+        };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(3000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        // TODO Auto-generated method stub
+        AppController.getInstance().addToRequestQueue(req);
     }
 
 

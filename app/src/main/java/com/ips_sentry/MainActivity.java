@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -17,8 +18,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -271,6 +274,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     private void hitUrl(String url) {
         // TODO Auto-generated method stub
 
+        Log.d("DEBUG",url);
+        //url = "http://ips-systems.com/home/mobileappsignin?username=pca02&password=password";
 
         final StringRequest req = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>() {
@@ -278,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                     public void onResponse(String response) {
                         pDialog.dismiss();
 
-                        // Log.d("DEBUG",response);
+                        Log.d("DEBUG",response);
 
                         try {
                             JSONObject jsonObject = new JSONObject(response);
@@ -333,7 +338,15 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             @Override
             public void onErrorResponse(VolleyError error) {
                 pDialog.dismiss();
-
+                NetworkResponse response = error.networkResponse;
+                if(response != null && response.data != null){
+                    Toast.makeText(MainActivity.this,"errorMessage:"+response.statusCode, Toast.LENGTH_SHORT).show();
+                }else{
+                    String errorMessage=error.getClass().getSimpleName();
+                    if(!TextUtils.isEmpty(errorMessage)){
+                        Toast.makeText(MainActivity.this,"errorMessage:"+errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         }) {
             @Override
@@ -347,8 +360,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             }
         };
 
-        req.setRetryPolicy(new DefaultRetryPolicy(3000,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+       req.setRetryPolicy(new DefaultRetryPolicy(30000,
+              DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         // TODO Auto-generated method stub
         AppController.getInstance().addToRequestQueue(req);
     }
