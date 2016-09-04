@@ -3,7 +3,9 @@ package com.ips_sentry.appdata;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -37,7 +39,9 @@ public class AppController extends Application {
 
     private SharedPreferences _preferences;
 
-    private  SaveManager saveManager;
+    private SaveManager saveManager;
+
+    private static final int DELAY = 0;
 
     @Override
     public void onCreate() {
@@ -46,7 +50,8 @@ public class AppController extends Application {
         _preferences = PreferenceManager.getDefaultSharedPreferences(this);
         saveManager = new SaveManager(this);
 
-       Constant.messageList = new ArrayList<>();
+        Constant.messageList = new ArrayList<>();
+
 
     }
 
@@ -107,7 +112,6 @@ public class AppController extends Application {
             mRequestQueue.cancelAll(tag);
         }
     }
-
 
 
 }

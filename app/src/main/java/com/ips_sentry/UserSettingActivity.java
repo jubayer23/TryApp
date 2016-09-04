@@ -25,12 +25,12 @@ import java.util.List;
  */
 public class UserSettingActivity extends AppCompatActivity implements View.OnClickListener {
 
-    Spinner spinner_gps_interval, spinner_url_env, spinner_stopped_threshold,spinner_dim_delay;
+    Spinner spinner_gps_interval, spinner_url_env, spinner_stopped_threshold;
     TextView tv_gps_url;
 
     private SaveManager saveManager;
 
-    List<String> list_gps_interval, list_url_env, list_stopped_threshold,list_dim_delay;
+    List<String> list_gps_interval, list_url_env, list_stopped_threshold;
 
     Button btn_save;
 
@@ -111,45 +111,6 @@ public class UserSettingActivity extends AppCompatActivity implements View.OnCli
             }
         });
 
-        spinner_dim_delay.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String item = parent.getItemAtPosition(position).toString();
-                saveManager.setDimDelay(item);
-
-                if(item.equalsIgnoreCase("Never"))
-                {
-                    saveManager.setSelectedDimDelay(-1);
-                }else
-                {
-                    String s[] = item.split(" ");
-                    int value;
-                    switch (s[1]){
-
-                        case Constant.SECONDS:
-                            value = Integer.parseInt(s[0]);
-                            saveManager.setSelectedDimDelay(value * 1000);
-                            break;
-                        case Constant.MINUTES:
-                            value = Integer.parseInt(s[0]);
-                            saveManager.setSelectedDimDelay(value * 60 * 1000);
-                            break;
-                        case Constant.HOUR:
-                            value = Integer.parseInt(s[0]);
-                            saveManager.setSelectedDimDelay(value * 3600 * 1000);
-                            break;
-                    }
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-
-
 
     }
 
@@ -163,7 +124,6 @@ public class UserSettingActivity extends AppCompatActivity implements View.OnCli
 
         list_stopped_threshold = new ArrayList<String>();
 
-        list_dim_delay = new ArrayList<>();
 
         tv_gps_url = (TextView) findViewById(R.id.setting_tv_gps_url);
 
@@ -172,8 +132,6 @@ public class UserSettingActivity extends AppCompatActivity implements View.OnCli
         spinner_url_env = (Spinner) findViewById(R.id.setting_spinner_url_env);
 
         spinner_stopped_threshold = (Spinner) findViewById(R.id.setting_spinner_stopped_threshold);
-
-        spinner_dim_delay = (Spinner) findViewById(R.id.setting_spinner_dim_delay);
 
         btn_save = (Button) findViewById(R.id.setting_save);
 
@@ -241,20 +199,6 @@ public class UserSettingActivity extends AppCompatActivity implements View.OnCli
 
 
         /****************************************************************************/
-
-        list_dim_delay.add(saveManager.getDimDelay());
-
-        for (int i = 0; i < Constant.dim_delay.length; i++) {
-
-            if (list_dim_delay.contains(Constant.dim_delay[i])) continue;
-
-            list_dim_delay.add(Constant.dim_delay[i]);
-
-        }
-        ArrayAdapter<String> dimDelayAdapter = new ArrayAdapter<String>
-                (this, R.layout.spinner_item, list_dim_delay);
-
-        spinner_dim_delay.setAdapter(dimDelayAdapter);
 
 
     }

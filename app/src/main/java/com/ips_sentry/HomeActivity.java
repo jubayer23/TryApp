@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -78,10 +79,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     private ImageView charge_icon;
 
-    private static boolean screenDimOnFlag = false;
-
-
-    private BroadcastReceiver receiverForSetUserActivity, receiverScreenDimTurnOn;
+    private BroadcastReceiver receiverForSetUserActivity;
     private BroadcastReceiver receiverForMessage, receiverBatteryStateChanged;
 
 
@@ -100,12 +98,16 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     private Gson gson;
 
+    private View v;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+       // getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+        v = getLayoutInflater().inflate(R.layout.activity_home, null);// or any View (incase generated programmatically )
 
-        setContentView(R.layout.activity_home);
+        setContentView(v);
 
         init();
 
@@ -213,57 +215,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         filter.addAction(getPackageName() + "ImActive");
         LocalBroadcastManager.getInstance(this).registerReceiver(receiverForSetUserActivity, filter);
 
-        receiverScreenDimTurnOn = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
 
-                boolean onORoff = intent.getBooleanExtra(MyServiceUpdate.KEY_SCREEN_DIM_ON_OFF, false);
-                boolean isPlugged = DeviceInfoUtils.isPlugged(HomeActivity.this);
-
-
-                if (onORoff && !isPlugged) {
-                    screenDimOnFlag = true;
-                    //Settings.System.putInt(HomeActivity.this.getContentResolver(),
-                    //        Settings.System.SCREEN_BRIGHTNESS, 1);
-
-                    // Log.d("DEBUG","it here 1");
-
-                    WindowManager.LayoutParams lp = getWindow().getAttributes();
-                    lp.screenBrightness = 0.0f;// 100 / 100.0f;
-                    getWindow().setAttributes(lp);
-
-                    // Intent globalService = new Intent(HomeActivity.this, GlobalTouchService.class);
-                    // startService(globalService);
-
-                } else {
-
-                    float curBrightnessValue = 255;
-                    try {
-                        curBrightnessValue = android.provider.Settings.System.getInt(
-                                getContentResolver(), android.provider.Settings.System.SCREEN_BRIGHTNESS);
-                        //Log.d("DEBUG",String.valueOf(getWindow().getAttributes().screenBrightness));
-                    } catch (Settings.SettingNotFoundException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                    // Settings.System.putInt(HomeActivity.this.getContentResolver(),
-                    //        Settings.System.SCREEN_BRIGHTNESS, 255);
-
-                    WindowManager.LayoutParams lp = getWindow().getAttributes();
-                    lp.screenBrightness = curBrightnessValue / (float) 255;
-                    getWindow().setAttributes(lp);
-
-                    //we start this activity only for refresh the screem
-                    startActivity(new Intent(HomeActivity.this, DummyActivity.class));
-                }
-
-
-            }
-        };
-
-        IntentFilter filter_2 = new IntentFilter();
-        filter_2.addAction(getPackageName() + MyServiceUpdate.KEY_BROADCAST_FOR_SCREEN_DIM);
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiverScreenDimTurnOn, filter_2);
 
 
         receiverForMessage = new BroadcastReceiver() {
@@ -295,6 +247,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 if (action.equals(Intent.ACTION_BATTERY_CHANGED)) {
 
 
+
                     //Toast.makeText(HomeActivity.this,"called",Toast.LENGTH_SHORT).show();
 
                     int plugged=
@@ -303,8 +256,18 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     if (plugged == BatteryManager.BATTERY_PLUGGED_AC
                             || plugged == BatteryManager.BATTERY_PLUGGED_USB) {
                         charge_icon.setImageResource(R.drawable.charge_icon);
+
+                        //lp.flags |= lp.FLAG_KEEP_SCREEN_ON;
+
+                        v.setKeepScreenOn(true);
+
+
                     }else{
                         charge_icon.setImageResource(0);
+
+                      //  lp.flags |= lp.FLAGS_CHANGED;
+                        v.setKeepScreenOn(false);
+
                     }
                     int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
                     int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
@@ -544,6 +507,12 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             Intent intent = new Intent(HomeActivity.this, MainActivity.class);
             startActivity(intent);
 
+           // PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+           // PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+            //wl.acquire();
+
+            //wl.release();
+//
             finish();
 
             return;
@@ -639,7 +608,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         //Intent globalService = new Intent(HomeActivity.this, GlobalTouchService.class);
         // stopService(globalService);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverForSetUserActivity);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverScreenDimTurnOn);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverForMessage);
         unregisterReceiver(receiverBatteryStateChanged);
     }
@@ -647,30 +615,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     public boolean dispatchTouchEvent(MotionEvent event) {
 
-        if (screenDimOnFlag) {
-            screenDimOnFlag = false;
-
-            float curBrightnessValue = 255;
-            try {
-                curBrightnessValue = android.provider.Settings.System.getInt(
-                        getContentResolver(), android.provider.Settings.System.SCREEN_BRIGHTNESS);
-                //Log.d("DEBUG",String.valueOf(getWindow().getAttributes().screenBrightness));
-            } catch (Settings.SettingNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            // Settings.System.putInt(HomeActivity.this.getContentResolver(),
-            //        Settings.System.SCREEN_BRIGHTNESS, 255);
-
-            WindowManager.LayoutParams lp = getWindow().getAttributes();
-            lp.screenBrightness = curBrightnessValue / (float) 255;
-            getWindow().setAttributes(lp);
-
-            //we start this activity only for refresh the screem
-            startActivity(new Intent(HomeActivity.this, DummyActivity.class));
-        }
-
-        MyServiceUpdate.lastUpdateForScreenOff = 0;
 
 
         if (Constant.isMessageLayoutResume && Constant.isIncomingMessageDuringOnResume) {
@@ -697,7 +641,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onResponse(String response) {
 
-                        Log.d("DEbug","onResponse");
+                      //  Log.d("DEbug",response);
 
                         Constant.messageList.clear();
 
@@ -731,7 +675,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
                             pDialogHome.dismiss();
 
-                            Log.d("DEbug","tryCatch");
+                           // Log.d("DEbug","tryCatch");
                         }
 
                     }

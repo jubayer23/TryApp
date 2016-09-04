@@ -31,8 +31,6 @@ public class SaveManager {
     private static final String KEY_RECORD_TIME = "record_time";
     private static final String KEY_TRAFFIC_INFO = "showTrafficInfo";
     private static final String KEY_SHOWINDIVIDUAL = "showIndividualLabels";
-    private static final String KEY_DIMDELAY = "dimdelay";
-    private static final String KEY_SELECTED_DIMDELAY = "selected_dimdelay";
     private static final String KEY_UNSEEN_MESSAGE = "unseen_message";
 
     private SharedPreferences.Editor editor;
@@ -48,25 +46,6 @@ public class SaveManager {
     private SharedPreferences getSharedPreferences(final String prefName,
                                                    final int mode) {
         return this.context.getSharedPreferences(prefName, mode);
-    }
-
-    public void setDimDelay(String value) {
-        editor.putString(KEY_DIMDELAY, value);
-        editor.apply();
-    }
-
-    public String getDimDelay() {
-        return mSharedPreferences.getString(KEY_DIMDELAY, Constant.dim_delay[0]);
-    }
-
-
-    public void setSelectedDimDelay(int value) {
-        editor.putInt(KEY_SELECTED_DIMDELAY, value);
-        editor.apply();
-    }
-
-    public int getSelectedDimDelay() {
-        return mSharedPreferences.getInt(KEY_SELECTED_DIMDELAY, -1);
     }
 
     public void setSessionToken(String value) {

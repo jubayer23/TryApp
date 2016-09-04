@@ -1,6 +1,7 @@
 package com.ips_sentry.fragment;
 
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -41,8 +43,12 @@ import com.ips_sentry.utils.Constant;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class MessagesFragment extends Fragment {
@@ -55,6 +61,8 @@ public class MessagesFragment extends Fragment {
 
 
     private BroadcastReceiver receiverForMessage, receiverForMakeSeen;
+
+    private ProgressDialog pDialog;
 
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -162,7 +170,10 @@ public class MessagesFragment extends Fragment {
 
         saveManager = new SaveManager(getActivity());
 
-
+        pDialog = new ProgressDialog(getActivity());
+        pDialog.setMessage("Loading.... Please wait...");
+        pDialog.setIndeterminate(false);
+        pDialog.setCancelable(false);
     }
 
 
@@ -212,6 +223,8 @@ public class MessagesFragment extends Fragment {
 
         Button btn_submit = (Button) dialog.findViewById(R.id.dialog_submit);
 
+        Button btn_get_source = (Button) dialog.findViewById(R.id.dialog_get_source);
+
         btn_submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -228,9 +241,13 @@ public class MessagesFragment extends Fragment {
                         String.valueOf(id),
                         et_dialog_password.getText().toString());
 
+                SimpleDateFormat dateFormat = new SimpleDateFormat(
+                        "hh:mm a", Locale.getDefault());
+                Date date = new Date();
+                String time = dateFormat.format(date);
 
 
-                Message message = new Message(et_dialog_password.getText().toString(),true,Constant.outGoingMessage);
+                Message message = new Message(et_dialog_password.getText().toString(), true, Constant.outGoingMessage,time);
 
 
                 Constant.messageList.add(message);
@@ -242,6 +259,14 @@ public class MessagesFragment extends Fragment {
 
                 dialog.dismiss();
                 //TODO
+            }
+        });
+
+
+        btn_get_source.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hitUrlForGetSources(id);
             }
         });
 
@@ -263,7 +288,7 @@ public class MessagesFragment extends Fragment {
                     public void onResponse(String response) {
 
                         // pDialogHome.dismiss();
-                       // Log.d("debug","success");
+                        // Log.d("debug","success");
 
                     }
                 }, new Response.ErrorListener() {
@@ -289,11 +314,69 @@ public class MessagesFragment extends Fragment {
             }
         };
 
-        req.setRetryPolicy(new DefaultRetryPolicy(3000,
+        req.setRetryPolicy(new DefaultRetryPolicy(30000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         // TODO Auto-generated method stub
         AppController.getInstance().addToRequestQueue(req);
     }
 
+    private void hitUrlForGetSources(final int messageId) {
 
+        //progressBar.setVisibility(View.VISIBLE);
+        pDialog.show();
+
+        String url = saveManager.getUrlEnv() + Constant.URL_SOURCE_NUMBER;
+
+        StringRequest req = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+
+                        showDialogForNumber(response);
+                        if (pDialog.isShowing())
+                            pDialog.dismiss();
+
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                if (pDialog.isShowing())
+                    pDialog.dismiss();
+
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("sessionId", saveManager.getSessionToken());
+                params.put("messageId", String.valueOf(messageId));
+
+                return params;
+            }
+        };
+
+        //AppController.getInstance().addToRequestQueue(req);
+
+        req.setRetryPolicy(new DefaultRetryPolicy(30000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        // TODO Auto-generated method stub
+        AppController.getInstance().addToRequestQueue(req);
+
+    }
+
+    public void showDialogForNumber(String number) {
+        final Dialog dialog = new Dialog(getActivity(),
+                android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
+        dialog.setCancelable(true);
+        dialog.setContentView(R.layout.dialog_success);
+
+
+        TextView tv_alert = (TextView) dialog.findViewById(R.id.dialog_alert);
+        tv_alert.setText(number);
+
+
+        dialog.show();
+    }
 }

@@ -28,6 +28,9 @@ import com.ips_sentry.utils.Constant;
 
 import org.w3c.dom.Text;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +89,10 @@ public class MessageListAdapter extends BaseAdapter {
             viewHolder.tv_reply_alert = (TextView) convertView
                     .findViewById(R.id.tv_reply_alert);
 
+            viewHolder.tv_timestamp = (TextView) convertView
+                    .findViewById(R.id.tv_timestamp);
+
+
             viewHolder.ll_contentWithBackground = (LinearLayout) convertView.findViewById(R.id.contentWithBackground);
 
             convertView.setTag(viewHolder);
@@ -94,6 +101,8 @@ public class MessageListAdapter extends BaseAdapter {
         }
 
         final Message message = Displayedplaces.get(position);
+
+       // Log.d("DEBUG",message.getSent());
 
         viewHolder.tv_reply_alert.setVisibility(View.GONE);
 
@@ -119,6 +128,7 @@ public class MessageListAdapter extends BaseAdapter {
             layoutParams = (LinearLayout.LayoutParams) viewHolder.tv_message.getLayoutParams();
             layoutParams.gravity = Gravity.RIGHT;
             viewHolder.tv_message.setLayoutParams(layoutParams);
+            viewHolder.tv_timestamp.setLayoutParams(layoutParams);
 
 
         } else {
@@ -150,6 +160,7 @@ public class MessageListAdapter extends BaseAdapter {
             layoutParams = (LinearLayout.LayoutParams) viewHolder.tv_message.getLayoutParams();
             layoutParams.gravity = Gravity.LEFT;
             viewHolder.tv_message.setLayoutParams(layoutParams);
+            viewHolder.tv_timestamp.setLayoutParams(layoutParams);
 
             //layoutParams = (LinearLayout.LayoutParams) holder.txtInfo.getLayoutParams();
             // layoutParams.gravity = Gravity.LEFT;
@@ -162,7 +173,14 @@ public class MessageListAdapter extends BaseAdapter {
 
 
         viewHolder.tv_message.setText(body);
+        viewHolder.tv_timestamp.setText(message.getSent());
 
+       // Date date = new Date(message.getSent());
+       // SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+       // String stringDate = sdf.format(date );
+       // Log.d("DEBUG_D",stringDate);
+        //Date today = Calendar.getInstance().getTime();
+        //Log.d("DEBUG_D",String.valueOf(today));
 
         return convertView;
     }
@@ -179,6 +197,7 @@ public class MessageListAdapter extends BaseAdapter {
         private LinearLayout ll_contentWithBackground;
         public LinearLayout content;
         public TextView tv_reply_alert;
+        public TextView tv_timestamp;
     }
 
 

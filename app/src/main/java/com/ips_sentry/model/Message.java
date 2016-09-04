@@ -38,10 +38,11 @@ public class Message {
         this.isSeen = isSeen;
     }
 
-    public Message(String body, boolean isSeen,String type) {
+    public Message(String body, boolean isSeen,String type,String sent) {
         this.body = body;
         this.isSeen = isSeen;
         this.type = type;
+        this.sent = sent;
     }
 
     public String getBody() {

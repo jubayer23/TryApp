@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -33,6 +34,7 @@ import com.ips_sentry.ips.R;
 import com.ips_sentry.service.MyServiceUpdate;
 import com.ips_sentry.utils.ConnectionDetector;
 import com.ips_sentry.utils.Constant;
+import com.ips_sentry.utils.DeviceInfoUtils;
 import com.ips_sentry.utils.LastLocationOnly;
 
 import org.json.JSONException;
@@ -216,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         }
 
         if (id == R.id.tvNearByVenues) {
-            Intent intent = new Intent(MainActivity.this, NearByVenues.class);
+            Intent intent = new Intent(MainActivity.this, NearByVenues2.class);
 
             startActivity(intent);
         }
@@ -264,17 +266,25 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         pDialog.setCancelable(false);
         pDialog.show();
 
-        hitUrl(saveManager.getUrlEnv() + Constant.URL_LOGIN);
+
+        String phoneNumber = DeviceInfoUtils.getPhoneNumber(MainActivity.this);
+        if (phoneNumber == null) {
+            phoneNumber = "";
+        }
+
+        // Log.d("DEBUG",phoneNumber + " "+ ipAddress);
+
+        hitUrl(saveManager.getUrlEnv() + Constant.URL_LOGIN, phoneNumber);
 
 
         // Adding request to request queue
 
     }
 
-    private void hitUrl(String url) {
+    private void hitUrl(String url, final String PHONE) {
         // TODO Auto-generated method stub
 
-        Log.d("DEBUG",url);
+        //Log.d("DEBUG",url);
         //url = "http://ips-systems.com/home/mobileappsignin?username=pca02&password=password";
 
         final StringRequest req = new StringRequest(Request.Method.POST, url,
@@ -283,13 +293,14 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                     public void onResponse(String response) {
                         pDialog.dismiss();
 
-                        Log.d("DEBUG",response);
+                        // Log.d("DEBUG",response);
 
                         try {
                             JSONObject jsonObject = new JSONObject(response);
                             boolean status = jsonObject.getBoolean(KEY_STATUS);
                             String session_id;
                             if (status) {
+
 
                                 session_id = jsonObject.getString(KEY_SESSION_TOKEN);
 
@@ -339,12 +350,12 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             public void onErrorResponse(VolleyError error) {
                 pDialog.dismiss();
                 NetworkResponse response = error.networkResponse;
-                if(response != null && response.data != null){
-                    Toast.makeText(MainActivity.this,"errorMessage:"+response.statusCode, Toast.LENGTH_SHORT).show();
-                }else{
-                    String errorMessage=error.getClass().getSimpleName();
-                    if(!TextUtils.isEmpty(errorMessage)){
-                        Toast.makeText(MainActivity.this,"errorMessage:"+errorMessage, Toast.LENGTH_SHORT).show();
+                if (response != null && response.data != null) {
+                    Toast.makeText(MainActivity.this, "errorMessage:" + response.statusCode, Toast.LENGTH_SHORT).show();
+                } else {
+                    String errorMessage = error.getClass().getSimpleName();
+                    if (!TextUtils.isEmpty(errorMessage)) {
+                        Toast.makeText(MainActivity.this, "errorMessage:" + errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -355,13 +366,14 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("username", username);
                 params.put("password", password);
+                params.put("Phone", PHONE);
                 //Log.d("DEBUG_selected",String.valueOf(selected));
                 return params;
             }
         };
 
-       req.setRetryPolicy(new DefaultRetryPolicy(30000,
-              DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        req.setRetryPolicy(new DefaultRetryPolicy(30000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         // TODO Auto-generated method stub
         AppController.getInstance().addToRequestQueue(req);
     }

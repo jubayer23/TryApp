@@ -92,7 +92,6 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
     private SensorManager senSensorManager;
     private Sensor senAccelerometer;
     private static long lastUpdate = 0, lastUpdateGps = 0, lastUpdateUserCheckIn = 0, lastUpdateForGpsInterval = 0;
-    public static long lastUpdateForScreenOff = 0;
     //private static long lastUpdate_forGps = 0;
     float last_x = 0, last_y = 0, last_z = 0;
 
@@ -100,12 +99,10 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
     public static final String KEY_USER_STATUS = "user_status";
     public static final String KEY_SENTRYINDIVIDUAL_RESPONSE = "sentryIndividuals_response";
 
-    public static final String KEY_SCREEN_ONOFF = "screen_on_off";
 
     private static boolean new_start = true;
 
     public static final String KEY_ACTION_MARKERUPDATE = "ACTION_MARKERUPDATE";
-    public static final String KEY_ACTION_SCREENONOFF = "ACTION_SCREEN_ON_OFF";
 
     private PowerManager.WakeLock mWakeLock;
 
@@ -274,20 +271,6 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                         }
 
                         // hitUrlForGps("http://dev.ips-systems.com/Sentry/MobileAppUpdateLocation?sessionId=2ifkpgbzklmkygnhmpixcx24&lat=24.912785&lng=91.9535703");
-
-
-                        if ((curTime - lastUpdateForScreenOff) >= saveManager.getSelectedDimDelay() && saveManager.getSelectedDimDelay() != -1) {
-                            // long diffTime = (curTime - lastUpdateForScreenOff);
-                            //diffTime = diffTime / 1000;
-                            // Log.d("DEBUG",diffTime+ " d");
-                            if (lastUpdateForScreenOff != 0) {
-                                Intent i = new Intent(_context.getPackageName() + KEY_BROADCAST_FOR_SCREEN_DIM);
-                                i.putExtra(KEY_SCREEN_DIM_ON_OFF, true);
-                                LocalBroadcastManager.getInstance(_context).sendBroadcast(i);
-
-                            }
-                            lastUpdateForScreenOff = curTime;
-                        }
 
 
                         //try {
@@ -492,6 +475,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                                 com.ips_sentry.model.Message messageObj = new com.ips_sentry.model.Message(message, false);
                                 messageObj.setId(id);
                                 messageObj.setType(Constant.incomingMessage);
+                                messageObj.setSent(tempObject.getString("sent"));
                                 Constant.messageList.add(messageObj);
 
                                // saveManager.setMessageObjList(Constant.messageList);

@@ -120,36 +120,6 @@
                 android:src="@drawable/spinner_arrow" />
         </RelativeLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Display dim delay :"
-            android:textColor="@color/white"
-            android:textSize="16sp" />
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/btn_login_selector">
-
-            <Spinner
-                android:id="@+id/setting_spinner_dim_delay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@null"
-                android:popupBackground="@color/white"
-                android:textSize="16sp" />
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:padding="5dp"
-                android:src="@drawable/spinner_arrow" />
-        </RelativeLayout>
 
 
         <Button

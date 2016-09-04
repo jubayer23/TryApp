@@ -148,8 +148,11 @@ public class NearByVenues extends AppCompatActivity {
             protected Map<String, String> getParams() {
                 //userId=XXX&routeId=XXX&selected=XXX//(33.817831, -118.298076)
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("lat", lat);
-                params.put("lng", lng);
+                //params.put("lat", lat);
+               // params.put("lng", lng);
+
+                params.put("lat", "33.817831");
+                params.put("lng", "-118.298076");
 
 
                 //Log.d("DEBUG_selected",String.valueOf(selected));
@@ -157,7 +160,7 @@ public class NearByVenues extends AppCompatActivity {
             }
         };
 
-        req.setRetryPolicy(new DefaultRetryPolicy(3000,
+        req.setRetryPolicy(new DefaultRetryPolicy(30000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         // TODO Auto-generated method stub
         AppController.getInstance().addToRequestQueue(req);

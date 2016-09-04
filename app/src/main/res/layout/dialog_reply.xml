@@ -41,15 +41,38 @@
             android:layout_marginTop="20dp"
             android:background="@color/material_blue_grey_950" />
 
-        <Button
-            android:id="@+id/dialog_submit"
-            android:layout_width="fill_parent"
-            android:layout_height="60dp"
-            android:background="@drawable/btn_login_selector"
-            android:text="Submit"
-            android:textColor="@color/black"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+
+            <Button
+                android:id="@+id/dialog_get_source"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_login_selector"
+                android:text="Get Source"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/dialog_submit"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_login_selector"
+                android:text="Submit"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+
+        </LinearLayout>
 
 
     </LinearLayout>
