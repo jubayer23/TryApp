@@ -15,10 +15,12 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.plus.model.people.Person;
@@ -67,9 +69,11 @@ public class NearByVenues2 extends BaseMapActivity {
 
     AlertDialogManager alert = new AlertDialogManager();
 
-    List<Bitmap> logos;
+    private List<Bitmap> logos;
 
-    List<Marker> markers;
+   private List<Marker> markers;
+
+    private double venue_first_lat = 0.0, venue_first_lng = 0.0;
 
     @Override
     protected void startDemo() {
@@ -78,10 +82,12 @@ public class NearByVenues2 extends BaseMapActivity {
 
         getMap().setMyLocationEnabled(true);
 
-        LatLng myLocation = new LatLng(gps.getLatitude(),
-               gps.getLongitude());
-        getMap().animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation,
-                15));
+        getMap().getUiSettings().setZoomControlsEnabled(true);
+
+        // LatLng myLocation = new LatLng(gps.getLatitude(),
+        //        gps.getLongitude());
+        // getMap().animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation,
+        //         15));
 
         hitUrl(saveManager.getUrlEnv() + Constant.URL_NEARBYPLACE, String.valueOf(gps.getLatitude()), String.valueOf(gps.getLongitude()));
 
@@ -142,6 +148,11 @@ public class NearByVenues2 extends BaseMapActivity {
                                         Venue venue = gson.fromJson(tempObject.toString(), Venue.class);
                                         venues.add(venue);
 
+                                        if (i == 0) {
+                                            venue_first_lat = venue.getLatitude();
+                                            venue_first_lng = venue.getLongitude();
+                                        }
+
                                         //route.setColor(Route.WHITE);
 
                                     } catch (JSONException e) {
@@ -182,10 +193,10 @@ public class NearByVenues2 extends BaseMapActivity {
                 //userId=XXX&routeId=XXX&selected=XXX//(33.817831, -118.298076)
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("lat", lat);
-                 params.put("lng", lng);
+                params.put("lng", lng);
 
-              //  params.put("lat", "33.817831");
-              //  params.put("lng", "-118.298076");
+                // params.put("lat", "33.817831");
+                // params.put("lng", "-118.298076");
 
 
                 //Log.d("DEBUG_selected",String.valueOf(selected));
@@ -255,7 +266,7 @@ public class NearByVenues2 extends BaseMapActivity {
                 markerOptions.icon(BitmapDescriptorFactory.fromBitmap(getResizedBitmap(logos.get(i), 80, 80)));
                 markerOptions.snippet(venue.getVenueAddress());
 
-                Marker marker =   getMap().addMarker(markerOptions);
+                Marker marker = getMap().addMarker(markerOptions);
                 markers.add(marker);
             }
 
@@ -282,6 +293,53 @@ public class NearByVenues2 extends BaseMapActivity {
             });
 
             pDialog.dismiss();
+
+
+            getMap().setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+                @Override
+                public void onMapLoaded() {
+                    if (gps.canGetLocation()) {
+                        if (venue_first_lat != 0.0 && venue_first_lng != 0.0) {
+                            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                            builder.include(new LatLng(venue_first_lat, venue_first_lng));
+                            builder.include(new LatLng(gps.getLatitude(), gps.getLongitude()));
+                            LatLngBounds bounds = builder.build();
+                            int padding = 120; // offset from edges of the map in pixels
+                            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+                            //Log.d("DEBUG_1stLat",venue_first_lat + " " + venue_first_lng);
+                            // placeMarkerForSentryIndividual(venue_first_lat, venue_first_lng, "");
+                            getMap().animateCamera(cu);
+
+                        } else {
+                            LatLng myLocation = new LatLng(gps.getLatitude(),
+                                    gps.getLongitude());
+                            getMap().animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation,
+                                    15));
+
+                            //This mean that there is no venues nearby user so we need to show a alert
+                            alert.showAlertDialog(NearByVenues2.this, "NO VENUES AVAILABLE", "Sorry, we do not currently have any venues nearby.", false);
+
+
+                        }
+                    } else {
+                        if (venue_first_lat != 0.0 && venue_first_lng != 0.0) {
+                            // placeMarkerForSentryIndividual(venue_first_lat, venue_first_lng, "");
+                            LatLng myLocation = new LatLng(venue_first_lat,
+                                    venue_first_lng);
+                            getMap().animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation,
+                                    15));
+                        } else {
+
+                            //Log.d("NEARBYPLACE", "NOT FOUND");
+                            pDialog.dismiss();
+
+
+                            alert.showAlertDialog(NearByVenues2.this, "NO VENUES AVAILABLE", "Sorry, we do not currently have any venues nearby.", false);
+
+                        }
+                    }
+                }
+            });
 
         }
     }

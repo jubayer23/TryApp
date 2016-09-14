@@ -6,11 +6,10 @@ import java.util.ArrayList;
 
 public class Constant {
 
-    public static final String APP_VERSION = "1.25";
 
     public static final String URL_PREFIX = "http://";
 ///http://dev.ips-systems.com/home/MobileAppSignIn
-    public static String URL_ENV = URL_PREFIX + "dev.";
+    public static String URL_ENV = URL_PREFIX ;
 
     public static String URL_LOGIN = "ips-systems.com/home/MobileAppSignIn";
     public static String URL_UerCheckIn = "ips-systems.com/home/MobileAppUserCheckIn";

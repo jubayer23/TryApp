@@ -15,7 +15,7 @@ public class SaveManager {
     private static SharedPreferences mSharedPreferences;
 
     private static final int PRIVATE_MODE = Context.MODE_PRIVATE;
-    private static final String PREF_NAME = "com.ips_sentry";
+    private static final String PREF_NAME = "com.creative.ips_sentry";
     private static final String KEY_SESSION_TOKEN = "session_token";
     private static final String KEY_USER_NAME = "user_name";
     private static final String KEY_USER_PASSWORD = "user_password";
@@ -147,7 +147,7 @@ public class SaveManager {
     }
 
     public String getStoppedThreshold() {
-        return mSharedPreferences.getString(KEY_STOPPED_THRESHOLD, "5");
+        return mSharedPreferences.getString(KEY_STOPPED_THRESHOLD, Constant.stopped_threshold[1]);
     }
 
 

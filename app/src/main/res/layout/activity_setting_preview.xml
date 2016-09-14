@@ -8,6 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:orientation="vertical">
 
         <LinearLayout
@@ -18,100 +19,114 @@
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="5"
+                android:layout_weight="4"
+                android:text="Username: "
                 android:textColor="@color/black"
-                android:text="UserName: " />
+                android:textSize="22sp" />
 
             <TextView
                 android:id="@+id/tv_username"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="5"
-                android:text="null" />
+                android:layout_weight="6"
+                android:text="null"
+                android:textSize="18sp" />
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:orientation="horizontal">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="5"
+                android:layout_weight="4"
+                android:text="Server Environmnet: "
                 android:textColor="@color/black"
-                android:text="Server Environmnet: " />
+                android:textSize="22sp" />
 
             <TextView
                 android:id="@+id/tv_server_env"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="5"
-                android:text="Information Processing Service, LLC" />
+                android:layout_weight="6"
+                android:text="Information Processing Service, LLC"
+                android:textSize="18sp" />
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:orientation="horizontal">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="5"
+                android:layout_weight="4"
+                android:text="Gps Interval: "
                 android:textColor="@color/black"
-                android:text="Gps Interval: " />
+                android:textSize="22sp" />
 
             <TextView
                 android:id="@+id/tv_gps_interval"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="5"
-                android:text="Information Processing Service, LLC" />
+                android:layout_weight="6"
+                android:text="Information Processing Service, LLC"
+                android:textSize="18sp" />
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:orientation="horizontal">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="5"
+                android:layout_weight="4"
+                android:text="Stopped Threshold: "
                 android:textColor="@color/black"
-                android:text="Stopped Threshold: " />
+                android:textSize="22sp" />
 
             <TextView
                 android:id="@+id/tv_stopped_threshold"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="5"
-                android:text="Information Processing Service, LLC" />
+                android:layout_weight="6"
+                android:text="Information Processing Service, LLC"
+                android:textSize="18sp" />
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:orientation="horizontal">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="5"
+                android:layout_weight="4"
+                android:text="Battery Level: "
                 android:textColor="@color/black"
-                android:text="Battery Level: " />
+                android:textSize="22sp" />
 
             <TextView
                 android:id="@+id/tv_batterylevel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="5"
-                android:text="null" />
+                android:layout_weight="6"
+                android:text="null"
+                android:textSize="18sp" />
 
         </LinearLayout>
 

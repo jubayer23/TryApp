@@ -38,6 +38,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
 import com.ips_sentry.appdata.AppController;
 import com.ips_sentry.appdata.SaveManager;
+import com.ips_sentry.ips.R;
 import com.ips_sentry.utils.ConnectionDetector;
 import com.ips_sentry.utils.Constant;
 
@@ -264,7 +265,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                                 //diffTime = diffTime / 1000;
                                 // Log.d("DEBUG","Yes");
                                 lastUpdateUserCheckIn = curTime;
-                                hitUrlForUserChekIn(saveManager.getUrlEnv() + Constant.URL_UerCheckIn, session_id, Constant.APP_VERSION);
+                                hitUrlForUserChekIn(saveManager.getUrlEnv() + Constant.URL_UerCheckIn, session_id, getResources().getString(R.string.app_version));
                             }
 
 

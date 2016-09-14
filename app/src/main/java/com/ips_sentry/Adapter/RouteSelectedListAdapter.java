@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -90,6 +91,8 @@ public class RouteSelectedListAdapter extends BaseAdapter {
             viewHolder.route_name = (TextView) convertView
                     .findViewById(R.id.route_name);
 
+            viewHolder.radioButton = (RadioButton) convertView.findViewById(R.id.radiobutton_routes);
+
 
             convertView.setTag(viewHolder);
         } else {
@@ -103,39 +106,30 @@ public class RouteSelectedListAdapter extends BaseAdapter {
 
         if (selectedId.equalsIgnoreCase(route.getRouteId())) {
 
+            viewHolder.radioButton.setChecked(true);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-
-
-                viewHolder.rl_layout.setBackground(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.card_background_selected, null));
-
-                if (!selectedId.equalsIgnoreCase(alreadySelectedId)) {
-                    alreadySelectedId = selectedId;
-                    Intent i = new Intent(activity.getPackageName() + ValetFragment.KEY_BROADCAST);
-                    LocalBroadcastManager.getInstance(activity).sendBroadcast(i);
-
-                }
+            if (!selectedId.equalsIgnoreCase(alreadySelectedId)) {
+                alreadySelectedId = selectedId;
+                Intent i = new Intent(activity.getPackageName() + ValetFragment.KEY_BROADCAST);
+                LocalBroadcastManager.getInstance(activity).sendBroadcast(i);
 
             }
+
 
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                viewHolder.rl_layout.setBackground(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.card_background, null));
-            }
+
+            viewHolder.radioButton.setChecked(false);
         }
 
-        viewHolder.rl_layout.setOnClickListener(new View.OnClickListener() {
+
+        viewHolder.radioButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    // Log.d("DEBUG", String.valueOf(route.getRouteId()));
-                    selectedId = route.getRouteId();
-                    alreadySelectedId = "";
-                    notifyDataSetChanged();
-                }
+                selectedId = route.getRouteId();
+                alreadySelectedId = "";
+                notifyDataSetChanged();
             }
         });
-
 
         return convertView;
     }
@@ -149,6 +143,7 @@ public class RouteSelectedListAdapter extends BaseAdapter {
 
     private static class ViewHolder {
         private TextView route_name;
+        private RadioButton radioButton;
         RelativeLayout rl_layout;
     }
 

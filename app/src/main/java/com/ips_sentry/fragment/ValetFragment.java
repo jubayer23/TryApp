@@ -12,6 +12,7 @@ import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -51,7 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ValetFragment extends Fragment implements View.OnClickListener {
+public class ValetFragment extends Fragment implements View.OnClickListener,SwipeRefreshLayout.OnRefreshListener{
 
     public static final String KEY_BROADCAST = "broadcastForEditText";
     private ListView listView;
@@ -72,6 +73,8 @@ public class ValetFragment extends Fragment implements View.OnClickListener {
 
 
     private boolean SKIP_ONRESUME = false;
+
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -173,11 +176,17 @@ public class ValetFragment extends Fragment implements View.OnClickListener {
         });
 
 
+        swipeRefreshLayout = (SwipeRefreshLayout) getActivity().findViewById(R.id.swipe_refresh_layout_valet);
+        swipeRefreshLayout.setOnRefreshListener(this);
+
+
     }
 
     private void sendRequestToServer() {
 
-        progressBar.setVisibility(View.VISIBLE);
+       // progressBar.setVisibility(View.VISIBLE);
+
+        swipeRefreshLayout.setRefreshing(true);
 
         String url = saveManager.getUrlEnv() + Constant.URL_SHOW_ROUTES;
 
@@ -204,6 +213,7 @@ public class ValetFragment extends Fragment implements View.OnClickListener {
 
                         if (progressBar.getVisibility() == View.VISIBLE)
                             progressBar.setVisibility(View.INVISIBLE);
+                        swipeRefreshLayout.setRefreshing(false);
 
 
                     }
@@ -212,6 +222,7 @@ public class ValetFragment extends Fragment implements View.OnClickListener {
             public void onErrorResponse(VolleyError error) {
                 if (progressBar.getVisibility() == View.VISIBLE)
                     progressBar.setVisibility(View.INVISIBLE);
+                swipeRefreshLayout.setRefreshing(false);
 
             }
         }) {
@@ -416,8 +427,8 @@ public class ValetFragment extends Fragment implements View.OnClickListener {
     }
 
 
-
-
-
-
+    @Override
+    public void onRefresh() {
+        sendRequestToServer();
+    }
 }

@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">IPS Sentry</string>
+    <string name="app_version">1.26</string>
+
+
     <string name="user_setting">Admin Setting</string>
     <string name="show_routes">Show Routes</string>
     <string name="about">About</string>
@@ -13,4 +16,6 @@
     <string name="drawer_close">drawer close</string>
     <string name="setting_preview">Setting Preview</string>
     <string name="nearby_venues_details">Venues Map</string>
+
+
 </resources>

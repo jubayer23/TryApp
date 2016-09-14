@@ -6,18 +6,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.PowerManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +45,11 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 public class MainActivity extends AppCompatActivity implements OnClickListener {
 
@@ -83,6 +91,14 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     private ImageView btn_setting;
 
+    private ImageView img_logo;
+
+    private Runnable myRunnable;
+
+    private boolean isOpen = true;
+
+    private static int username_length = 0, password_length = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         setContentView(R.layout.activity_main);
 
         init();
+
 
         et_password.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -164,6 +181,14 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         saveManager.setUserLang(String.valueOf(lastLocationOnly.getLongitude()));
 
 
+        if (!et_username.getText().toString().isEmpty())
+            username_length = et_username.getText().toString().length();
+        if (!et_password.getText().toString().isEmpty())
+            password_length = et_password.getText().toString().length();
+
+        startLogoAnimation();
+
+
     }
 
     private void restartService() {
@@ -176,6 +201,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         // TODO Auto-generated method stub
         et_username = (EditText) findViewById(R.id.username);
         et_password = (EditText) findViewById(R.id.password);
+
 
         btn_submit = (Button) findViewById(R.id.submit);
         btn_submit.setOnClickListener(this);
@@ -195,7 +221,11 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         btn_setting = (ImageView) findViewById(R.id.btn_usersetting);
         btn_setting.setOnClickListener(this);
 
+        img_logo = (ImageView) findViewById(R.id.logo);
+
+
     }
+
 
     @Override
     public void onClick(View v) {
@@ -218,6 +248,21 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         }
 
         if (id == R.id.tvNearByVenues) {
+
+            if (!cd.isConnectingToInternet()) {
+                //Internet Connection is not present
+                alert.showAlertDialog(MainActivity.this, "Internet Connection Error",
+                        "Please connect to working Internet connection", false);
+                //stop executing code by return
+                return;
+            }
+            if (!lastLocationOnly.canGetLocation()) {
+                lastLocationOnly.showSettingsAlert();
+
+                return;
+            }
+
+
             Intent intent = new Intent(MainActivity.this, NearByVenues2.class);
 
             startActivity(intent);
@@ -234,6 +279,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
 
         }
+
+
     }
 
     private void processSubmitButton() {
@@ -482,5 +529,91 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
 
     }
+
+
+    private void startLogoAnimation() {
+
+
+        final int[] logo_now_using = {0};
+
+
+        myRunnable = new Runnable() {
+            int updateInterval = 1000; //=one second
+            boolean stop = false;
+
+            @Override
+            public void run() {
+
+                //Log.d("DEBUG","YES");
+
+
+                // Any code which goes here will be executed every 'updateInterval'
+                // change your background here
+
+
+                if (logo_now_using[0] == 0) {
+
+
+                    Log.d("DEBUG",String.valueOf(et_username.getText().toString().length()) + " " +
+                            String.valueOf(username_length));
+                    Log.d("DEBUG2",String.valueOf(et_password.getText().toString().length()) + " " +
+                            String.valueOf(password_length));
+
+                    if ((et_username.getText().toString().length() != username_length) || (et_password.getText().toString().length() != password_length)) {
+                        isOpen = false;
+
+                    } else {
+                        isOpen = true;
+                    }
+
+
+                    img_logo.setImageResource(R.drawable.c);
+
+                    logo_now_using[0] = 1;
+
+
+                    updateInterval = 200;
+
+
+                } else if (logo_now_using[0] == 1) {
+
+
+                    // Log.d("DEBUG", String.valueOf(isOpen));
+
+
+                    if (isOpen) {
+                        img_logo.setImageResource(R.drawable.a);
+
+                    } else {
+                        img_logo.setImageResource(R.drawable.b);
+                    }
+
+
+                    logo_now_using[0] = 0;
+
+                    updateInterval = 4000;
+                }
+
+
+                if (!stop) {
+                    img_logo.postDelayed(this, updateInterval);
+                }
+            }
+        };
+
+        myRunnable.run();
+
+
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+
+        img_logo.removeCallbacks(myRunnable);
+    }
+
 
 }

@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/white"
+    android:id="@+id/rootview"
     tools:context="com.ips_sentry.MainActivity">
 
     <LinearLayout

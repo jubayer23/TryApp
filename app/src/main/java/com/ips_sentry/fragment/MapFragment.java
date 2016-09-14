@@ -114,6 +114,7 @@ public class MapFragment extends Fragment {
         mMap.setMyLocationEnabled(true);
         mMap.setTrafficEnabled(flag_traffic);
         mMap.getUiSettings().setMyLocationButtonEnabled(false);
+        mMap.getUiSettings().setZoomControlsEnabled(true);
 
         mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
             @Override
