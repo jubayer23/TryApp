@@ -114,7 +114,7 @@
             android:theme="@style/AppTheme.NoActionBar"></activity>
 
         <activity
-            android:name="com.ips_sentry.UserSettingActivity"
+            android:name="com.ips_sentry.SettingActivity"
             android:label="@string/user_setting"
             android:parentActivityName="com.ips_sentry.MainActivity"
             android:theme="@style/AppTheme">

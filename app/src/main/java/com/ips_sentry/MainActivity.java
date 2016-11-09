@@ -8,19 +8,14 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,11 +40,6 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
 public class MainActivity extends AppCompatActivity implements OnClickListener {
 
@@ -321,12 +311,13 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
         // Log.d("DEBUG",phoneNumber + " "+ ipAddress);
 
-        hitUrl(saveManager.getUrlEnv() + Constant.URL_LOGIN, phoneNumber);
+       hitUrl(saveManager.getUrlEnv() + Constant.URL_LOGIN, phoneNumber);
 
-
-        // Adding request to request queue
+       // hitUrlForSessionCheck( Constant.URL_SESSION_TEST);
 
     }
+
+
 
     private void hitUrl(String url, final String PHONE) {
         // TODO Auto-generated method stub
@@ -351,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
                                 session_id = jsonObject.getString(KEY_SESSION_TOKEN);
 
-                                //Log.d("DEBUG",session_id);
+                               // Log.d("DEBUG",session_id);
                                 saveManager.setUserName(username);
 
                                 saveManager.setUserPassword(password);
@@ -384,7 +375,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
                                 finish();
                             } else {
-                                alert.showAlertDialog(MainActivity.this, "Error", "Invalid credentials!", false);
+
+                                String message = jsonObject.getString("message");
+                                alert.showAlertDialog(MainActivity.this, "Error", message, false);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -514,7 +507,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                     return;
                 }
                 if (password.equals(Constant.ADMIN_PASSWORD)) {
-                    Intent intent = new Intent(MainActivity.this, UserSettingActivity.class);
+                    Intent intent = new Intent(MainActivity.this, SettingActivity.class);
                     startActivity(intent);
 
                     dialog.dismiss();
@@ -554,10 +547,10 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 if (logo_now_using[0] == 0) {
 
 
-                    Log.d("DEBUG",String.valueOf(et_username.getText().toString().length()) + " " +
-                            String.valueOf(username_length));
-                    Log.d("DEBUG2",String.valueOf(et_password.getText().toString().length()) + " " +
-                            String.valueOf(password_length));
+                    //Log.d("DEBUG",String.valueOf(et_username.getText().toString().length()) + " " +
+                    //        String.valueOf(username_length));
+                   // Log.d("DEBUG2",String.valueOf(et_password.getText().toString().length()) + " " +
+                   //         String.valueOf(password_length));
 
                     if ((et_username.getText().toString().length() != username_length) || (et_password.getText().toString().length() != password_length)) {
                         isOpen = false;

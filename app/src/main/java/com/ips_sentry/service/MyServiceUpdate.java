@@ -326,8 +326,13 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                                 //startAlarm();
                                 //handler.sendEmptyMessage(0);
                                 //Fire the intent with activity name & confidence
+
                                 Intent i = new Intent(getPackageName() + KEY_ACTION_MARKERUPDATE);
+                                //response = "{\"statusCodeId\":1,\"sentryIndividuals\":[{\"Lat\" : 24.9174952,\n" +
+                                //        "\t\"Lng\":91.9348939,\n" +
+                                //        "\t\"Label\":\"abc\"}]}";
                                 i.putExtra(KEY_SENTRYINDIVIDUAL_RESPONSE, response);
+                              //  Log.d("DEBUG",response);
                                 LocalBroadcastManager.getInstance(_context).sendBroadcast(i);
 
 

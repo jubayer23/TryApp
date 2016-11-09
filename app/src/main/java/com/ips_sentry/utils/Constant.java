@@ -40,6 +40,17 @@ public class Constant {
 
     public static final String URL_ARRIVAL_NOTIFICATIONS = "ips-systems.com/Sentry/ArrivalNotification";
 
+    public static final String URL_NOTIFY_SUPERVISORS = "ips-systems.com/Sentry/NotifySupervisors";
+
+    public static final String URL_NEW_INCIDENT = "ips-systems.com/Sentry/NewIncidentSubmit";
+
+    public static final String URL_RIDER_COUNT = "ips-systems.com/Sentry/RidershipCountSubmit";
+
+    public static final String URL_RENAME_BUS = "ips-systems.com/Sentry/RenameIndividual";
+
+    public static final String URL_SESSION_TEST = "http://dev.ips-systems.com/test/mobilesession";
+
+
 //IPS-Systems.com/Sentry/MobileAppGetSiteIndividuals
 
     public static final String[] gps_interval = {"5", "15", "30", "60", "300", "900", "1800", "3600"};

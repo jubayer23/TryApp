@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Created by comsol on 13-Jan-16.
  */
-public class UserSettingActivity extends AppCompatActivity implements View.OnClickListener {
+public class SettingActivity extends AppCompatActivity implements View.OnClickListener {
 
     Spinner spinner_gps_interval, spinner_url_env, spinner_stopped_threshold;
     TextView tv_gps_url;
@@ -227,7 +227,7 @@ public class UserSettingActivity extends AppCompatActivity implements View.OnCli
 
             saveManager.setGpsUrl(saveManager.getUrlEnv() + Constant.URL_GPSUpdate);
 
-            Toast.makeText(UserSettingActivity.this, "Saved Successfull", Toast.LENGTH_LONG).show();
+            Toast.makeText(SettingActivity.this, "Saved Successfull", Toast.LENGTH_LONG).show();
 
 
             finish();

@@ -4,16 +4,22 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -215,6 +221,7 @@ public class MapFragment extends Fragment {
                         }
                     }
 
+                    // Log.d("DEBUG",String.valueOf(sentryIndividuals.size()));
                     if (!sentryIndividuals.isEmpty()) {
                         placeMarkerForSentryIndividual();
                     }
@@ -237,28 +244,58 @@ public class MapFragment extends Fragment {
 
         mMap.clear();
 
+
         for (int i = 0; i < sentryIndividuals.size(); i++) {
 
+            // adding a marker on map with image from  drawable
 
+
+
+            //  Log.d("DEBUG_flag",String.valueOf(flag_individual_label));
             if (flag_individual_label) {
-                IconGenerator iconFactory = new IconGenerator(getActivity());
-                iconFactory.setColor(Color.WHITE);
-                MarkerOptions markerOptions = new MarkerOptions().
-                        icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(sentryIndividuals.get(i).getLabel()))).
-                        position(new LatLng(sentryIndividuals.get(i).getLat(), sentryIndividuals.get(i).getLng())).
-                        anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV());
+
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(new LatLng(
+                                sentryIndividuals.get(i).getLat(),
+                                sentryIndividuals.get(i).getLng()))
+                        .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(sentryIndividuals.get(i).getLabel())));
 
                 mMap.addMarker(markerOptions);
-
             } else {
-                MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(sentryIndividuals.get(i).getLat(), sentryIndividuals.get(i).getLng())).title(sentryIndividuals.get(i).getLabel());
-               mMap.addMarker(markerOptions);
+
+                MarkerOptions markerOptions = new MarkerOptions().position(
+                        new LatLng(
+                                sentryIndividuals.get(i).getLat(),
+                                sentryIndividuals.get(i).getLng())).title(sentryIndividuals.get(i).getLabel());
+
+                mMap.addMarker(markerOptions);
             }
 
 
         }
 
 
+    }
+
+    private Bitmap getMarkerBitmapFromView(String title) {
+
+        View customMarkerView = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.marker_custom, null);
+        ImageView markerImageView = (ImageView) customMarkerView.findViewById(R.id.profile_image);
+        TextView tv_title = (TextView) customMarkerView.findViewById(R.id.title);
+        tv_title.setText(title);
+       // markerImageView.setImageResource(resId);
+        customMarkerView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        customMarkerView.layout(0, 0, customMarkerView.getMeasuredWidth(), customMarkerView.getMeasuredHeight());
+        customMarkerView.buildDrawingCache();
+        Bitmap returnedBitmap = Bitmap.createBitmap(customMarkerView.getMeasuredWidth(), customMarkerView.getMeasuredHeight(),
+                Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(returnedBitmap);
+        canvas.drawColor(Color.WHITE, PorterDuff.Mode.SRC_IN);
+        Drawable drawable = customMarkerView.getBackground();
+        if (drawable != null)
+            drawable.draw(canvas);
+        customMarkerView.draw(canvas);
+        return returnedBitmap;
     }
 
     @Override

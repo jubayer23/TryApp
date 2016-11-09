@@ -62,23 +62,11 @@ public class AppController extends Application {
     public RequestQueue getRequestQueue() {
 
 
-        if (this.mRequestQueue == null) {
-
-
-            DefaultHttpClient mDefaultHttpClient = new DefaultHttpClient();
-
-            final ClientConnectionManager mClientConnectionManager = mDefaultHttpClient.getConnectionManager();
-            final HttpParams mHttpParams = mDefaultHttpClient.getParams();
-            final ThreadSafeClientConnManager mThreadSafeClientConnManager = new ThreadSafeClientConnManager(mHttpParams, mClientConnectionManager.getSchemeRegistry());
-
-            mDefaultHttpClient = new DefaultHttpClient(mThreadSafeClientConnManager, mHttpParams);
-
-            final HttpStack httpStack = new HttpClientStack(mDefaultHttpClient);
-
-            this.mRequestQueue = Volley.newRequestQueue(this.getApplicationContext(), httpStack);
+        if (mRequestQueue == null) {
+            mRequestQueue = Volley.newRequestQueue(getApplicationContext());
         }
 
-        return this.mRequestQueue;
+        return mRequestQueue;
     }
 
     public ImageLoader getImageLoader() {
