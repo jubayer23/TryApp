@@ -968,7 +968,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
 
 
             if ((time_array[0] >= 1 || time_array[1] >= 1 ||
-                    time_array[2] >= Integer.parseInt(saveManager.getStoppedThreshold()))
+                    time_array[2] >= saveManager.getStoppedThreshold())
                     && saveManager.getUserCurrentActivity().equalsIgnoreCase(Constant.USER_ACTIVITY_IDLE)) {
                 time_string = " 0 mins";
                 saveManager.setRecordTime(curTime);

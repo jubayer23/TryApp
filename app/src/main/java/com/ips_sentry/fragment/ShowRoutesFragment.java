@@ -68,11 +68,6 @@ public class ShowRoutesFragment extends Fragment implements SwipeRefreshLayout.O
 		{
 
 		}
-
-
-
-
-
 	}
 
 	private void init() {
@@ -132,7 +127,8 @@ public class ShowRoutesFragment extends Fragment implements SwipeRefreshLayout.O
 			protected Map<String, String> getParams() {
 				Map<String, String> params = new HashMap<String, String>();
 				params.put("sessionId", saveManager.getSessionToken());
-
+				params.put("lat", saveManager.getUserLat());
+				params.put("lng", saveManager.getUserLang());
 				return params;
 			}
 		};

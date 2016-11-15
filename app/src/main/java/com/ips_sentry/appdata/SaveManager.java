@@ -32,6 +32,9 @@ public class SaveManager {
     private static final String KEY_TRAFFIC_INFO = "showTrafficInfo";
     private static final String KEY_SHOWINDIVIDUAL = "showIndividualLabels";
     private static final String KEY_UNSEEN_MESSAGE = "unseen_message";
+    private static final String KEY_CANDETIALS = "lock_candetails";
+    private static final String KEY_LOCK_ROUTES = "lock_routes";
+
 
     private SharedPreferences.Editor editor;
     private Context context;
@@ -47,6 +50,25 @@ public class SaveManager {
                                                    final int mode) {
         return this.context.getSharedPreferences(prefName, mode);
     }
+
+    public void setLockCandetials(boolean value) {
+        editor.putBoolean(KEY_CANDETIALS, value);
+        editor.apply();
+    }
+
+    public boolean getLockCandetials() {
+        return mSharedPreferences.getBoolean(KEY_CANDETIALS, false);
+    }
+
+    public void setLockRoutes(boolean value) {
+        editor.putBoolean(KEY_LOCK_ROUTES, value);
+        editor.apply();
+    }
+
+    public boolean getLockRoutes() {
+        return mSharedPreferences.getBoolean(KEY_LOCK_ROUTES, false);
+    }
+
 
     public void setSessionToken(String value) {
         editor.putString(KEY_SESSION_TOKEN, value);
@@ -141,13 +163,13 @@ public class SaveManager {
         return mSharedPreferences.getString(KEY_URL_ENV, Constant.URL_ENV);
     }
 
-    public void setStoppedThreshold(String value) {
-        editor.putString(KEY_STOPPED_THRESHOLD, value);
+    public void setStoppedThreshold(int value) {
+        editor.putInt(KEY_STOPPED_THRESHOLD, value);
         editor.apply();
     }
 
-    public String getStoppedThreshold() {
-        return mSharedPreferences.getString(KEY_STOPPED_THRESHOLD, Constant.stopped_threshold[1]);
+    public int getStoppedThreshold() {
+        return mSharedPreferences.getInt(KEY_STOPPED_THRESHOLD, Constant.defaultStopTheshold);
     }
 
 

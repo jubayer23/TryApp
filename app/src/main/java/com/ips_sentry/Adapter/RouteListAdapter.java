@@ -11,6 +11,7 @@ import android.widget.CheckBox;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -107,20 +108,30 @@ public class RouteListAdapter extends BaseAdapter {
         viewHolder.rl_layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                viewHolder.checkBox.setVisibility(View.INVISIBLE);
-                viewHolder.progressBar.setVisibility(View.VISIBLE);
+                if(saveManager.getLockRoutes()){
 
-                sendRequestToServerForSelectionConfirmation(viewHolder.checkBox, viewHolder.progressBar, route);
+                    Toast.makeText(activity,"Routes are locked!",Toast.LENGTH_LONG).show();
+                }else{
+                    viewHolder.checkBox.setVisibility(View.INVISIBLE);
+                    viewHolder.progressBar.setVisibility(View.VISIBLE);
+
+                    sendRequestToServerForSelectionConfirmation(viewHolder.checkBox, viewHolder.progressBar, route);
+                }
+
             }
         });
 
         viewHolder.checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                viewHolder.checkBox.setVisibility(View.INVISIBLE);
-                viewHolder.progressBar.setVisibility(View.VISIBLE);
+                if(saveManager.getLockRoutes()){
+                    Toast.makeText(activity,"Routes are locked!",Toast.LENGTH_LONG).show();
+                }else{
+                    viewHolder.checkBox.setVisibility(View.INVISIBLE);
+                    viewHolder.progressBar.setVisibility(View.VISIBLE);
 
-                sendRequestToServerForSelectionConfirmation(viewHolder.checkBox, viewHolder.progressBar, route);
+                    sendRequestToServerForSelectionConfirmation(viewHolder.checkBox, viewHolder.progressBar, route);
+                }
             }
         });
 

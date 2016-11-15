@@ -1,5 +1,6 @@
 package com.ips_sentry;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,8 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.Bundle;
-import android.os.PowerManager;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -19,6 +18,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -32,6 +33,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.gson.Gson;
 import com.ips_sentry.appdata.AppController;
 import com.ips_sentry.appdata.SaveManager;
+import com.ips_sentry.dialog.AlertDialogManager;
 import com.ips_sentry.fragment.AdminFragment;
 import com.ips_sentry.fragment.MapFragment;
 import com.ips_sentry.fragment.MessagesFragment;
@@ -43,8 +45,6 @@ import com.ips_sentry.service.MyServiceUpdate;
 import com.ips_sentry.userview.AboutPage;
 import com.ips_sentry.userview.SettingPreview;
 import com.ips_sentry.utils.Constant;
-import com.ips_sentry.utils.DeviceInfoUtils;
-import com.ips_sentry.utils.DummyActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -94,7 +94,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private ProgressDialog pDialogHome;
-   // private static boolean isBatteryPlugedIn = false;
+    // private static boolean isBatteryPlugedIn = false;
 
     private Gson gson;
 
@@ -103,7 +103,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-       // getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        // getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         v = getLayoutInflater().inflate(R.layout.activity_home, null);// or any View (incase generated programmatically )
 
@@ -183,11 +183,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         tv_batterylevel = (TextView) findViewById(R.id.tv_batterylevel);
 
 
-       // if (DeviceInfoUtils.isPlugged(this)) {
+        // if (DeviceInfoUtils.isPlugged(this)) {
         //    charge_icon.setImageResource(R.drawable.charge_icon);
         //} else {
-         //   charge_icon.setImageResource(0);
-       // }
+        //   charge_icon.setImageResource(0);
+        // }
 
         //changeBatteryIcon(DeviceInfoUtils.getBatteryLevel(this));
 
@@ -214,8 +214,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         IntentFilter filter = new IntentFilter();
         filter.addAction(getPackageName() + "ImActive");
         LocalBroadcastManager.getInstance(this).registerReceiver(receiverForSetUserActivity, filter);
-
-
 
 
         receiverForMessage = new BroadcastReceiver() {
@@ -247,10 +245,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 if (action.equals(Intent.ACTION_BATTERY_CHANGED)) {
 
 
-
                     //Toast.makeText(HomeActivity.this,"called",Toast.LENGTH_SHORT).show();
 
-                    int plugged=
+                    int plugged =
                             intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
 
                     if (plugged == BatteryManager.BATTERY_PLUGGED_AC
@@ -262,10 +259,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                         v.setKeepScreenOn(true);
 
 
-                    }else{
+                    } else {
                         charge_icon.setImageResource(0);
 
-                      //  lp.flags |= lp.FLAGS_CHANGED;
+                        //  lp.flags |= lp.FLAGS_CHANGED;
                         v.setKeepScreenOn(false);
 
                     }
@@ -292,11 +289,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
 
         if (batteryPct < 9) {
-             charge_icon.setBackgroundResource(R.drawable.icon_battery_uncharge_red);
+            charge_icon.setBackgroundResource(R.drawable.icon_battery_uncharge_red);
         } else if (batteryPct >= 10 && batteryPct <= 50) {
-              charge_icon.setBackgroundResource(R.drawable.icon_battery_uncharge_yellow);
+            charge_icon.setBackgroundResource(R.drawable.icon_battery_uncharge_yellow);
         } else {
-           charge_icon.setBackgroundResource(R.drawable.icon_battery_uncharge_green);
+            charge_icon.setBackgroundResource(R.drawable.icon_battery_uncharge_green);
         }
 
 
@@ -496,24 +493,13 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         if (id == R.id.tv_logout) {
 
 
-            saveManager.setSignInOut(false);
+            if (saveManager.getLockCandetials()) {
 
-            hitUrlForSignOut(saveManager.getUrlEnv() + Constant.URL_SIGNOUT);
+                  showDialogForCheckPassword();
+            } else {
+                startLogoutProcess();
+            }
 
-            deleteSession();
-
-            stopService(new Intent(HomeActivity.this, MyServiceUpdate.class));
-
-            Intent intent = new Intent(HomeActivity.this, MainActivity.class);
-            startActivity(intent);
-
-           // PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-           // PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
-            //wl.acquire();
-
-            //wl.release();
-//
-            finish();
 
             return;
 
@@ -616,7 +602,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     public boolean dispatchTouchEvent(MotionEvent event) {
 
 
-
         if (Constant.isMessageLayoutResume && Constant.isIncomingMessageDuringOnResume) {
             saveManager.setNumOfUnseenMessage(0);
             ll_chat_noti.setVisibility(View.GONE);
@@ -641,7 +626,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onResponse(String response) {
 
-                      //  Log.d("DEbug",response);
+                        //  Log.d("DEbug",response);
 
                         Constant.messageList.clear();
 
@@ -657,7 +642,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
                                 Message message = gson.fromJson(tempObject.toString(), Message.class);
 
-                                if(tempObject.getString("read") != null)message.setSeen(true);
+                                if (tempObject.getString("read") != null) message.setSeen(true);
                                 else message.setSeen(false);
 
                                 Constant.messageList.add(message);
@@ -675,7 +660,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
                             pDialogHome.dismiss();
 
-                           // Log.d("DEbug","tryCatch");
+                            // Log.d("DEbug","tryCatch");
                         }
 
                     }
@@ -685,7 +670,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
                 pDialogHome.dismiss();
 
-                Log.d("DEbug","error");
+                Log.d("DEbug", "error");
 
             }
         }) {
@@ -703,6 +688,84 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         // TODO Auto-generated method stub
         AppController.getInstance().addToRequestQueue(req);
+    }
+
+
+
+    public void showDialogForCheckPassword() {
+
+        final Dialog dialog = new Dialog(this,
+                android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
+        dialog.setCancelable(true);
+        dialog.setContentView(R.layout.dialog_settingpassword);
+
+
+        final EditText et_dialog_password = (EditText) dialog.findViewById(R.id.dialog_password);
+        et_dialog_password.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+                }
+            }
+        });
+
+        Button btn_submit = (Button) dialog.findViewById(R.id.dialog_submit);
+        Button btn_cancel = (Button) dialog.findViewById(R.id.dialog_cancel);
+        btn_cancel.setVisibility(View.VISIBLE);
+
+
+        btn_submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String password = et_dialog_password.getText().toString().trim();
+
+
+                if (password.isEmpty()) {
+                    et_dialog_password.setError("Enter Password!");
+                    return;
+                }
+
+                if(password.equals(Constant.ADMIN_PASSWORD)){
+                    startLogoutProcess();
+                }else{
+                    Log.d("DEBUG",saveManager.getUserPassword());
+                    new AlertDialogManager().showAlertDialog(HomeActivity.this, "Error", "Password does not match", false);
+                }
+
+
+
+                dialog.dismiss();
+                //TODO
+            }
+        });
+
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+
+        dialog.show();
+
+
+    }
+
+    private  void startLogoutProcess(){
+        saveManager.setSignInOut(false);
+
+        hitUrlForSignOut(saveManager.getUrlEnv() + Constant.URL_SIGNOUT);
+
+        deleteSession();
+
+        stopService(new Intent(HomeActivity.this, MyServiceUpdate.class));
+
+        Intent intent = new Intent(HomeActivity.this, MainActivity.class);
+        startActivity(intent);
+
+        finish();
     }
 
 

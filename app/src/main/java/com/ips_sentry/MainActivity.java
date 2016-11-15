@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     private static String KEY_SESSION_TOKEN = "sessionId";
     public static String KEY_TRAFFIC_INFO = "showTrafficInfo";
     private static final String KEY_GPS_INTERVAL = "gpsIntervals";
+    private static final String KEY_GPS_STOP_THRESHOLD = "stoppedThreshold";
     public static String KEY_SHOWINDIVIDUAL_LABEL = "showIndividualLabels";
 
     // Progress Dialog
@@ -357,6 +358,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
                                 saveManager.setGpsInterval(jsonObject.getInt(KEY_GPS_INTERVAL));
                                 saveManager.setPermanentGpsInterval(jsonObject.getInt(KEY_GPS_INTERVAL));
+
+                                saveManager.setStoppedThreshold(jsonObject.getInt(KEY_GPS_STOP_THRESHOLD));
 
                                 saveManager.setRecordTime(0);
 

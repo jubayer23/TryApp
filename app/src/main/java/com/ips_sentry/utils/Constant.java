@@ -57,7 +57,7 @@ public class Constant {
 
     public static final String[] url_env = {"dev", "qa", "staging", "prod"};
 
-    public static final String[] stopped_threshold = {"1", "5", "10", "15", "30", "60", "120", "180"};
+   // public static final int[] stopped_threshold = {1, 5, 10", "15", "30", "60", "120", "180"};
 
     public static final String ADMIN_PASSWORD = "1127";
 
@@ -74,6 +74,7 @@ public class Constant {
     public static String USER_ACTIVITY_MOVING = "Moving";
     public static String USER_ACTIVITY_STOPPED = "Stopped";
     public static boolean isIncomingMessageDuringOnResume = false;
+    public static final int defaultStopTheshold = 10;
 
 
     public static String getUserActivity(int type) {

@@ -230,6 +230,8 @@ public class ValetFragment extends Fragment implements View.OnClickListener,Swip
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("sessionId", saveManager.getSessionToken());
+                params.put("lat", saveManager.getUserLat());
+                params.put("lng", saveManager.getUserLang());
 
                 return params;
             }

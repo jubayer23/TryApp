@@ -56,70 +56,34 @@
 
 
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Gps Interval : (in sec)"
-            android:textColor="@color/white"
-            android:textSize="16sp" />
 
-        <RelativeLayout
+        <!--  Continuous Rotation -->
+        <Switch
+            android:id="@+id/sw_candetials"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/btn_login_selector">
-
-            <Spinner
-                android:id="@+id/setting_spinner_gps_interval"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@null"
-                android:popupBackground="@color/white"
-                android:textSize="16sp" />
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:padding="5dp"
-                android:src="@drawable/spinner_arrow" />
-        </RelativeLayout>
-
-
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:layout_marginTop="8dp"
-            android:text="Stopped Threshold : (in min)"
+            android:background="@drawable/rounded_edittext"
+            android:paddingLeft="10dp"
+            android:text="Lock Credentials"
             android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textOff="No"
+            android:textOn="Yes"
+            android:textSize="20sp" />
 
-        <RelativeLayout
+        <!--  Continuous Rotation -->
+        <Switch
+            android:id="@+id/sw_lock_routes"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/btn_login_selector">
-
-            <Spinner
-                android:id="@+id/setting_spinner_stopped_threshold"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@null"
-                android:popupBackground="@color/white"
-                android:textSize="16sp" />
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:padding="5dp"
-                android:src="@drawable/spinner_arrow" />
-        </RelativeLayout>
-
+            android:layout_height="50dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/rounded_edittext"
+            android:paddingLeft="10dp"
+            android:text="Lock Routes"
+            android:textColor="@color/white"
+            android:textOff="No"
+            android:textOn="Yes"
+            android:textSize="20sp" />
 
 
         <Button
