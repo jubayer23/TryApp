@@ -22,7 +22,7 @@ public class LastLocationOnly {
     boolean isGPSEnabled = false;
 
     // flag for network status
-    boolean isNetworkEnabled = false;
+    //boolean isNetworkEnabled = false;
 
     // flag for GPS status
     boolean canGetLocation = false;
@@ -45,10 +45,10 @@ public class LastLocationOnly {
                     .isProviderEnabled(LocationManager.GPS_PROVIDER);
 
             // getting network status
-            isNetworkEnabled = locationManager
-                    .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+           // isNetworkEnabled = locationManager
+           //         .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
-            if (!isGPSEnabled && !isNetworkEnabled) {
+            if (!isGPSEnabled) {
                 // no network provider is enabled
             } else {
                 this.canGetLocation = true;
@@ -62,19 +62,6 @@ public class LastLocationOnly {
                             longitude = location.getLongitude();
                         }
 
-                    }
-                }
-                if (isNetworkEnabled) {
-                    if (location == null) {
-                        //Log.d("Network", "Network Enabled");
-                        if (locationManager != null) {
-                            location = locationManager
-                                    .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                            if (location != null) {
-                                latitude = location.getLatitude();
-                                longitude = location.getLongitude();
-                            }
-                        }
                     }
                 }
 

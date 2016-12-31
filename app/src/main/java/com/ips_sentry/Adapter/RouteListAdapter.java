@@ -83,6 +83,9 @@ public class RouteListAdapter extends BaseAdapter {
 
             viewHolder.checkBox = (CheckBox) convertView
                     .findViewById(R.id.checkbox);
+            if(saveManager.getLockRoutes()){
+                viewHolder.checkBox.setEnabled(false);
+            }
 
             viewHolder.progressBar = (ProgressBar) convertView
                     .findViewById(R.id.loadingProgterm_in_item);

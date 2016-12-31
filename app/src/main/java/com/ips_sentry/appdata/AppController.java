@@ -3,31 +3,19 @@ package com.ips_sentry.appdata;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.HttpClientStack;
-import com.android.volley.toolbox.HttpStack;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 import com.ips_sentry.utils.Constant;
 import com.ips_sentry.utils.LruBitmapCache;
 
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.HttpParams;
-
 import java.util.ArrayList;
 
 public class AppController extends Application {
 
-    private static final String SET_COOKIE_KEY = "Set-Cookie";
-    private static final String COOKIE_KEY = "Cookie";
-    private static final String SESSION_COOKIE = "sessionid";
 
     public static final String TAG = AppController.class.getSimpleName();
 
@@ -51,8 +39,6 @@ public class AppController extends Application {
         saveManager = new SaveManager(this);
 
         Constant.messageList = new ArrayList<>();
-
-
     }
 
     public static synchronized AppController getInstance() {

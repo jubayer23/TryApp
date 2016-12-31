@@ -8,7 +8,8 @@ public class Constant {
 
 
     public static final String URL_PREFIX = "http://";
-///http://dev.ips-systems.com/home/MobileAppSignIn
+
+    ///http://dev.ips-systems.com/home/MobileAppSignIn
     public static String URL_ENV = URL_PREFIX ;
 
     public static String URL_LOGIN = "ips-systems.com/home/MobileAppSignIn";
@@ -49,6 +50,8 @@ public class Constant {
     public static final String URL_RENAME_BUS = "ips-systems.com/Sentry/RenameIndividual";
 
     public static final String URL_SESSION_TEST = "http://dev.ips-systems.com/test/mobilesession";
+
+    public static final String URL_LOG = "IPS-Systems.com/Log/MobileLog";
 
 
 //IPS-Systems.com/Sentry/MobileAppGetSiteIndividuals
@@ -104,5 +107,7 @@ public class Constant {
             messageList.add(i,message);
         }
     }
+
+    public static String location_mode[] = {"LOCATION_MODE_OFF", "LOCATION_MODE_SENSORS_ONLY", "LOCATION_MODE_BATTERY_SAVING", "LOCATION_MODE_HIGH_ACCURACY"};
 
 }

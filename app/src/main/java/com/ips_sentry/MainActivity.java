@@ -498,6 +498,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         final EditText et_dialog_password = (EditText) dialog.findViewById(R.id.dialog_password);
 
         Button btn_submit = (Button) dialog.findViewById(R.id.dialog_submit);
+        Button btn_cancel = (Button) dialog.findViewById(R.id.dialog_cancel);
+        btn_cancel.setVisibility(View.VISIBLE);
 
         btn_submit.setOnClickListener(new OnClickListener() {
             @Override
@@ -517,6 +519,13 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 } else {
                     et_dialog_password.setError("Wrong Password");
                 }
+            }
+        });
+
+        btn_cancel.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
             }
         });
 

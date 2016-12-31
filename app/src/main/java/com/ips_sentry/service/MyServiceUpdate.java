@@ -3,22 +3,20 @@ package com.ips_sentry.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
-import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
+import android.telephony.PhoneStateListener;
+import android.telephony.SignalStrength;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -41,6 +39,7 @@ import com.ips_sentry.appdata.SaveManager;
 import com.ips_sentry.ips.R;
 import com.ips_sentry.utils.ConnectionDetector;
 import com.ips_sentry.utils.Constant;
+import com.ips_sentry.utils.DeviceInfoUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,7 +51,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class MyServiceUpdate extends Service implements SensorEventListener {
+public class MyServiceUpdate extends Service  {
     public static final String KEY_BROADCAST_FOR_SCREEN_DIM = "screen_dem";
     public static final String KEY_SCREEN_DIM_ON_OFF = "screen_onoroff";
 
@@ -91,17 +90,12 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
     private static String time_string = " 0 mins";
 
     private SensorManager senSensorManager;
-    private Sensor senAccelerometer;
-    private static long lastUpdate = 0, lastUpdateGps = 0, lastUpdateUserCheckIn = 0, lastUpdateForGpsInterval = 0;
-    //private static long lastUpdate_forGps = 0;
-    float last_x = 0, last_y = 0, last_z = 0;
+    private static long  lastUpdateGps = 0, lastUpdateUserCheckIn = 0, lastUpdateForGpsInterval = 0;
 
     //this is user for BRORCASR RECEIVER KEY
     public static final String KEY_USER_STATUS = "user_status";
     public static final String KEY_SENTRYINDIVIDUAL_RESPONSE = "sentryIndividuals_response";
 
-
-    private static boolean new_start = true;
 
     public static final String KEY_ACTION_MARKERUPDATE = "ACTION_MARKERUPDATE";
 
@@ -109,9 +103,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
 
     String movement_speed, movement_direction;
 
-    private static int counter_idle = 0, counter_moving = 0, counter_gps_moving = 0;
 
-    private boolean gps_moving = false;
 
     private Thread mThread;
 
@@ -119,21 +111,23 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
     private static int[] gps_moving_circle = {0, 0, 0, 0, 0, 0, 0};
     private static int gps_moving_circle_counter = 0;
 
+    private String msg_log = "";
+
+    private static final int UNKNOW_CODE = 99;
+    private TelephonyManager tel;
+    private MyPhoneStateListener myPhoneStateListener;
+    private static int signalLevel = 0;
     @Override
     public void onCreate() {
         // TODO Auto-generated method stub
         super.onCreate();
 
-        new_start = true;
 
         this._context = this;
 
         saveManager = new SaveManager(this);
 
         cd = new ConnectionDetector(getApplicationContext());
-
-        senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
 
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -151,7 +145,6 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "Service Started", Toast.LENGTH_LONG).show();
-        new_start = true;
 
         locationManager = (LocationManager) getSystemService(getApplicationContext().LOCATION_SERVICE);
         listener = new MyLocationListener();
@@ -177,8 +170,9 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
         //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, listener);
         // locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, listener);
 
-        senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-
+        myPhoneStateListener = new MyPhoneStateListener();
+        tel = (TelephonyManager) _context.getSystemService(Context.TELEPHONY_SERVICE);
+        tel.listen(myPhoneStateListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 
         findInBackground();
         return START_STICKY;
@@ -251,6 +245,8 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
 
 
                                 hitUrlForGps(saveManager.getGpsUrl(), session_id, user_lat, user_lang, saveManager.getUserCurrentActivity(), time_string);
+
+
 
 
                             }
@@ -332,7 +328,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                                 //        "\t\"Lng\":91.9348939,\n" +
                                 //        "\t\"Label\":\"abc\"}]}";
                                 i.putExtra(KEY_SENTRYINDIVIDUAL_RESPONSE, response);
-                              //  Log.d("DEBUG",response);
+                                //  Log.d("DEBUG",response);
                                 LocalBroadcastManager.getInstance(_context).sendBroadcast(i);
 
 
@@ -382,20 +378,11 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
     private void hitUrlForUserChekIn(String url, final String session_id, final String app_version) {
         // TODO Auto-generated method stub
         //Log.d("debug", "before");
-        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        Intent batteryStatus = _context.registerReceiver(null, ifilter);
+        final int finalBatteryPct = DeviceInfoUtils.getBatteryLevel(_context);
 
-        int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-        int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-        int batteryPct = 100;
-        if (level != -1 && scale != -1) {
-            batteryPct = (int) ((level / (float) scale) * 100f);
-        }
-        // Log.d("DEBUG_battery",String.valueOf(batteryPct));
+        final boolean isPlugged = DeviceInfoUtils.isPlugged(_context);
 
-        final int finalBatteryPct = batteryPct;
-
-        //Log.d("debug", String.valueOf(finalBatteryPct));
+        final String locationMode = Constant.location_mode[DeviceInfoUtils.getLocationMode(_context)];
 
         final StringRequest req = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>() {
@@ -437,6 +424,11 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                 params.put("sessionId", session_id);
                 params.put("appVersion", app_version);
                 params.put("batteryLevel", String.valueOf(finalBatteryPct));
+                params.put("locationMode", locationMode);
+                params.put("chargeStatus", String.valueOf(isPlugged?"Charging":"Not_Charging"));
+                params.put("dataSignalStrength", String.valueOf(signalLevel));
+                params.put("isRouteLocked", String.valueOf(saveManager.getLockRoutes()));
+                params.put("isCredentialLocked", String.valueOf(saveManager.getLockCandetials()));
                 // Log.d("DEBUG_selected",String.valueOf(finalBatteryPct));
                 return params;
             }
@@ -484,7 +476,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                                 messageObj.setSent(tempObject.getString("sent"));
                                 Constant.messageList.add(messageObj);
 
-                               // saveManager.setMessageObjList(Constant.messageList);
+                                // saveManager.setMessageObjList(Constant.messageList);
                                 //Constant.messageList = saveManager.getMessageObjList();
 
 
@@ -520,6 +512,42 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                 //userId=XXX&routeId=XXX&selected=XXX
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("sessionId", session_id);
+                // Log.d("DEBUG_selected",String.valueOf(finalBatteryPct));
+                return params;
+            }
+        };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(3000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        // TODO Auto-generated method stub
+        AppController.getInstance().addToRequestQueue(req);
+    }
+
+    private void hitUrlForLogMessage(String url, final String session_id) {
+        // TODO Auto-generated method stub
+        //Log.d("DEBUg",url);
+        final StringRequest req = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                //userId=XXX&routeId=XXX&selected=XXX
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("sessionId", session_id);
+                params.put("msg",msg_log);
+                params.put("typeId","0");
+                params.put("programId","4");
                 // Log.d("DEBUG_selected",String.valueOf(finalBatteryPct));
                 return params;
             }
@@ -630,8 +658,10 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                         // Log.d("DEBUG_InKm",String.valueOf(distance_inKm));
 
                         // time taken (in seconds)
-                        float timeTaken = ((loc.getTime() - previousBestLocation2
-                                .getTime()) / 1000);
+                        double timeTaken_minus = (loc.getTime() - previousBestLocation2
+                                .getTime());
+                        double timeTaken = (timeTaken_minus / 1000);
+
 
                         // double timeTaken_inHour = (timeTaken / 60) / 60;
 
@@ -671,34 +701,23 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                         //Log.d("DEBUG",String.valueOf(distance));
                         movement_speed = String.valueOf(speed_mph);
                         // Log.d("DEBUG",String.valueOf(movement_speed));
-                        gps_moving = false;
 
 
+
+                        msg_log = "curLat=" + loc.getLatitude()
+                                + " curLng=" + loc.getLongitude() +
+                                " curTime=" + loc.getTime()
+                                + " prevLocLat=" + previousBestLocation2.getLatitude()
+                                +" prevLocLng=" + previousBestLocation2.getLongitude() +
+                                " prevTime="+ previousBestLocation2.getTime()+
+                                " calculatedTimeInterval=" + timeTaken +
+                                " calculatedDistance(inKm)=" + distance_inKm +
+                                 " calculatedSpeed(inMph)=" + movement_speed;
+
+                        if(speed_mph >= 100){
+                            hitUrlForLogMessage(saveManager.getUrlEnv() + Constant.URL_LOG,saveManager.getSessionToken());
+                        }
                         if (speed_mph >= 1 && locationManager.getProvider(LocationManager.GPS_PROVIDER).supportsBearing()) {
-                            // double degree = previousBestLocation2.bearingTo(loc);
-                            // Log.d("DEBUG", String.valueOf(speed_mph));
-
-                            //direction_text.setVisibility(View.VISIBLE);
-
-                            //Log.i(TAG, String.valueOf(degree));
-                            // double lat1 = previousBestLocation2.getLatitude();
-                            // double lat2 = loc.getLatitude();
-                            // double lon1 = previousBestLocation2.getLatitude();
-                            // double lon2 = loc.getLongitude();
-
-                            //% convert to radians:
-                            // double g2r = Math.PI / 180;
-                            // double lat1r = lat1 * g2r;
-                            // double lat2r = lat2 * g2r;
-                            // double lon1r = lon1 * g2r;
-                            //double lon2r = lon2 * g2r;
-                            ///double dlonr = lon2r - lon1r;
-                            //double y = Math.sin(dlonr) * Math.cos(lat2r);
-                            //double x = Math.cos(lat1r) * Math.sin(lat2r) - Math.sin(lat1r) * Math.cos(lat2r) * Math.cos(dlonr);
-
-                            //%compute bearning and convert back to degrees:
-                            //double degree = Math.atan2(y, x) / g2r;
-
 
                             //Log.d("DeBUG_degree", String.valueOf(degree));
 
@@ -709,27 +728,10 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                             //movement_direction = String.valueOf(degree);
 
 
-                            // double x1 = previousBestLocation2.getLatitude();
-                            // double y1 = previousBestLocation2.getLongitude();
-                            // double x2 = loc.getLatitude();
-                            // double y2 = loc.getLongitude();
-                            // double slope = (y2 - y1) / (x2 - x1);
-
-                            //  if (slope > 2) {
-                            //     movement_direction = "N";
-                            // } else if (slope < -2) {
-                            //     movement_direction = "S";
-                            //  } else if (slope > -0.5 && slope <= 0.5 && (x2 - x1) < 0) {
-                            //     movement_direction = "E";
-                            // } else if (slope > -0.5 && slope <= 0.5 && (x2 - x1) > 0) {
-                            //    movement_direction = "W";
-                            //}
-
 
                             gps_moving_circle = makeShiftToOneDigit(gps_moving_circle, 1);
 
 
-                            gps_moving = true;
 
                             movement_direction = "";
 
@@ -774,7 +776,6 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                             }
 
                         } else {
-                            gps_moving = false;
                             movement_direction = null;
 
                             gps_moving_circle = makeShiftToOneDigit(gps_moving_circle, 0);
@@ -797,17 +798,23 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
 
                     if (numOfZero(gps_moving_circle) >= 4) {
                         calculateUserActivity(Constant.USER_ACTIVITY_IDLE, curTime);
+                        if (saveManager.getGpsInterval() < 60) {
+                            saveManager.setGpsInterval(60);
+                        }
                     } else {
                         saveManager.setGpsInterval(saveManager.getPermanentGpsInterval());
                         calculateUserActivity(Constant.USER_ACTIVITY_MOVING, curTime);
                     }
 
+
+                    saveManager.setUserLat(String.valueOf(loc.getLatitude()));
+                    saveManager.setUserLang(String.valueOf(loc.getLongitude()));
+
                 }
                 previousBestLocation = loc;
                 // previousBestLocation = loc;
 
-                saveManager.setUserLat(String.valueOf(loc.getLatitude()));
-                saveManager.setUserLang(String.valueOf(loc.getLongitude()));
+
 
                 //Log.d("DEBUG",String.valueOf(loc.getLatitude()));
                 //loc.getLatitude();
@@ -871,64 +878,7 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
 
     }
 
-    /**
-     * SENSOR MANAGER
-     */
-    @Override
-    public void onSensorChanged(SensorEvent sensorEvent) {
 
-        Sensor mySensor = sensorEvent.sensor;
-
-        if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            float x = sensorEvent.values[0];
-            float y = sensorEvent.values[1];
-            float z = sensorEvent.values[2];
-
-
-            long curTime = System.currentTimeMillis();
-
-
-            if ((curTime - lastUpdate) >= 1000) {
-                long diffTime = (curTime - lastUpdate);
-                lastUpdate = curTime;
-
-
-                // Log.d("DEBUG", String.valueOf(Math.abs(x - last_x)) + " " + String.valueOf(Math.abs(y - last_y)) + " " + String.valueOf(Math.abs(z - last_z)));
-
-                String user_activity = Constant.USER_ACTIVITY_IDLE;
-                // if (Math.abs(x - last_x) >= 2 || Math.abs(y - last_y) >= 2 || Math.abs(z - last_z) >= 2) {
-                //    Log.d("DEBUG_MOVE", String.valueOf(Math.abs(x - last_x)) + " " + String.valueOf(Math.abs(y - last_y)) + " " + String.valueOf(Math.abs(z - last_z)));
-                //    user_activity = Constant.USER_ACTIVITY_MOVING;
-                //
-                // } else {
-                //    user_activity = Constant.USER_ACTIVITY_IDLE;
-                // }
-
-                float speed = Math.abs(x + y + z - last_x - last_y - last_z) / diffTime * 10000;
-                //Log.d("DEBUG_speed", String.valueOf(movement_speed));
-
-                if (new_start) {
-                    new_start = false;
-                    user_activity = saveManager.getUserCurrentActivity();
-                } else if (speed <= 1.5 && !gps_moving) {
-
-                    user_activity = Constant.USER_ACTIVITY_IDLE;
-
-                } else if (gps_moving && speed > 1.5) {
-                    counter_idle = 0;
-                    user_activity = Constant.USER_ACTIVITY_MOVING;
-                }
-
-
-                // calculateUserActivity(user_activity, curTime);
-                //Log.d("onSensorChanged", System.currentTimeMillis() + "=movement_speed=" + movement_speed);
-
-                last_x = x;
-                last_y = y;
-                last_z = z;
-            }
-        }
-    }
 
 
     public void calculateUserActivity(String user_activity, long curTime) {
@@ -973,13 +923,6 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                 time_string = " 0 mins";
                 saveManager.setRecordTime(curTime);
                 saveManager.setUserCurrentActivity(Constant.USER_ACTIVITY_STOPPED);
-                if (saveManager.getGpsInterval() < 60) {
-                    //saveManager.setPermanentGpsInterval(saveManager.getGpsInterval());
-                    //force gps interval to 60 sec
-                    saveManager.setGpsInterval(60);
-                }
-
-
             }
 
             if (time_string.length() <= 1) time_string = " 0 mins";
@@ -1016,10 +959,6 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
     }
 
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-    }
 
     @Override
     public void onDestroy() {
@@ -1027,7 +966,6 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
         super.onDestroy();
         //Log.v("STOP_SERVICE", "DONE");
         locationManager.removeUpdates(listener);
-        senSensorManager.unregisterListener(this);
 
         mWakeLock.release();
 
@@ -1060,5 +998,17 @@ public class MyServiceUpdate extends Service implements SensorEventListener {
                 + " Meter   " + meterInDec);
 
         return Radius * c;
+    }
+
+    private class MyPhoneStateListener extends PhoneStateListener {
+        /* Get the Signal strength from the provider, each tiome there is an update */
+        @Override
+        public void onSignalStrengthsChanged(SignalStrength signalStrength) {
+            super.onSignalStrengthsChanged(signalStrength);
+
+            if (null != signalStrength && signalStrength.getGsmSignalStrength() != UNKNOW_CODE) {
+                signalLevel = signalStrength.getLevel();
+            }
+        }
     }
 }

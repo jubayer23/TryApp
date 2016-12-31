@@ -256,7 +256,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
                         //lp.flags |= lp.FLAG_KEEP_SCREEN_ON;
 
-                        v.setKeepScreenOn(true);
+                        if(saveManager.getUserCurrentActivity().equalsIgnoreCase(Constant.USER_ACTIVITY_MOVING) ||
+                                saveManager.getUserCurrentActivity().equalsIgnoreCase(Constant.USER_ACTIVITY_IDLE)){
+                            v.setKeepScreenOn(true);
+                        }
+
 
 
                     } else {

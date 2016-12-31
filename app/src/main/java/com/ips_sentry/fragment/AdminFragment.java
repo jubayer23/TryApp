@@ -715,6 +715,10 @@ public class AdminFragment extends Fragment {
                        // dialog.dismiss();
                         ed_numerical_field_off.setText("");
                         ed_numerical_field_on.setText("");
+
+                        selected_field[0] = off_count;
+                        ed_numerical_field_off.setBackgroundResource(R.drawable.rounded_edittext_green);
+                        ed_numerical_field_on.setBackgroundResource(R.drawable.rounded_edittext);
                     }
 
 
